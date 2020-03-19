@@ -9,8 +9,6 @@ default: lint
 DIRTARGETS=$(addsuffix /.,$(DIRS))
 $(TOPTARGETS): $(DIRTARGETS)
 $(DIRTARGETS):
-	$(MAKE) -C $@ ${MAKECMDGOALS}
+	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-unittest: agent/.
-
-.PHONY: default lint unittest $(DIRTARGETS)
+.PHONY: default lint $(DIRTARGETS)
