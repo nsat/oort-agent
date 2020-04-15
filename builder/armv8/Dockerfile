@@ -17,7 +17,7 @@ USER root
 COPY deploy/build/tmp/deploy/sdk/$SDK /tmp
 RUN bash /tmp/$SDK -y
 
-FROM base as sdk-$ARCH
+FROM base as sdk
 ARG ARCH
 COPY --from=install /opt/poky /opt/poky
 COPY repository/builder/$ARCH/init.sh /init.sh
