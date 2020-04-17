@@ -63,6 +63,7 @@ jobs:
         params:
           build: repository/builder/base
           load_base: base
+        get_params: {skip_download: true}
 
   - name: build-sdk-armv7a
     build_log_retention:
