@@ -18,6 +18,9 @@ trigger-release:
 	fly -t oort trigger-job -j oort:agent-release/build-agent-armv7a
 	fly -t oort trigger-job -j oort:agent-release/build-agent-armv8
 
+install-release:
+	fly -t oort set-pipeline -p oort:agent-release -c oort-agent-release.yml
+
 lint:
 	@echo hope this is ok
   
