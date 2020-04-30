@@ -239,8 +239,8 @@ PACKAGECONFIG_append_pn-nativesdk-qemu = " sdl"
 # this doesn't mean anything to you.
 CONF_VERSION = "1"
 
-BB_NUMBER_THREADS = "4"
-PARALLEL_MAKE = "-j 4"
+BB_NUMBER_THREADS = "8"
+PARALLEL_MAKE = "-j 8"
 
 # ensure zlib is included
 IMAGE_INSTALL_append = " zlib"
