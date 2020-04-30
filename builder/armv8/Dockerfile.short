@@ -9,7 +9,7 @@ RUN apt-get update &&\
         
 FROM base AS builder-poky-sumo
 USER root
-COPY deploy/tmp/deploy/sdk/poky-glibc-x86_64-meta-toolchain-aarch64-toolchain-2.5.1.sh /tmp
+COPY deploy/build/tmp/deploy/sdk/poky-glibc-x86_64-meta-toolchain-aarch64-toolchain-2.5.1.sh /tmp
 RUN bash /tmp/poky-glibc-x86_64-meta-toolchain-aarch64-toolchain-2.5.1.sh -y
 
 FROM base as sdk-armv8
