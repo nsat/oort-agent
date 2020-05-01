@@ -14,7 +14,7 @@ RUN bash /tmp/poky-glibc-x86_64-meta-toolchain-aarch64-toolchain-2.5.1.sh -y
 
 FROM base as sdk-armv8
 COPY --from=builder-poky-sumo /opt/poky /opt/poky
-COPY init.sh /init.sh
+COPY repository/builder/armv8/init.sh /init.sh
 WORKDIR /W
 ENTRYPOINT ["/init.sh"]
 
