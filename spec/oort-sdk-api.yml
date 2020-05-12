@@ -1,0 +1,196 @@
+openapi: '3.0.3'
+info:
+  title: OORT Agent SDK Interface
+  version: '1.0'
+servers:
+  - url: http://localhost:2005/sdk/v1
+paths:
+  /send_file:
+    description: Send a file to a destination
+    post:
+      tags:
+        - sdk
+      operationId: send_file
+      requestBody:
+        description: The file and parameters for sending
+        required: true
+        content:
+          "application/json":
+            schema:
+              "$ref": "#/components/schemas/SendFileRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/SendFileResponse"
+        '400':
+          description: Bad request
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+
+
+  /query_available_files/{topic}:
+    description: Query the Transfer Agent for files available for retrieval
+    parameters:
+      - name: topic
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[-_A-Za-z0-9]+$"
+    get:
+      tags:
+        - sdk
+      operationId: query_available_files
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/AvailableFilesResponse"
+
+  /retrieve_file:
+    description: >
+      Instruct the transfer agent to move a received file to a destination.
+      The data file is moved to the requested destination; the file metadata
+      is returned as the response body.
+    post:
+      tags:
+        - sdk
+      operationId: retrieve_file
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              "$ref": "#/components/schemas/RetrieveFileRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FileInfo"
+        '400':
+          description: Bad request
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+
+    TTLParams:
+      description: TTL parameters for a sent item
+      properties:
+        urgent:
+          type: integer
+          description: TTL in seconds for urgent items
+          default: 9000
+        bulk:
+          type: integer
+          description: TTL in seconds for bulk items
+          default: 43200
+        surplus:
+          type: integer
+          description: TTL in seconds for surplus items
+          default: 172800
+
+    SendOptions:
+      description: options to apply to a send request
+      properties:
+        TTLParams:
+          "$ref": "#/components/schemas/TTLParams"
+        reliable:
+          type: boolean
+          description: whether to send an item reliably, i.e., with retries
+          default: true
+
+    SendFileRequest:
+      x-body-name: send_file_request
+      required: [destination, filepath, topic]
+      properties:
+        destination:
+          type: string
+          description: the destination to send the file to
+        filepath:
+          type: string
+          description: The source filepath.  Must be an absolute path.
+          pattern: "^/.*"
+        topic:
+          type: string
+          description: the pipeline topic to send the file to
+        options:
+          "$ref": "#/components/schemas/SendOptions"
+
+    SendFileResponse:
+      description: Response to a send file request
+      type: object
+      required: [UUID]
+      properties:
+        UUID:
+          type: string
+          format: UUID
+
+    FileInfo:
+      type: object
+      description: Information about the file and the transfer request.
+      required: [id, path, size, modified, created, crc32]
+      properties:
+        id:
+          type: string
+          format: UUID
+        path:
+          type: string
+        size:
+          type: integer
+        modified:
+          type: integer
+        created:
+          type: integer
+        crc32:
+          type: string
+        extra:
+          type: object
+          additionalProperties:
+              type: string
+        
+    AvailableFilesResponse:
+      title: AvailableFilesResponse
+      required: [files]
+      properties:
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/FileInfo"
+        overflow:
+          type: boolean
+          description: true if there are more files available than could be returned in this call
+
+    RetrieveFileRequest:
+      x-body-name: retrieve_request
+      type: object
+      required: [id, save_path]
+      properties:
+        id:
+          type: string
+          format: UUID
+        save_path:
+          type: string
+          description: The destination path to save the file. Must be an absolute path.
+          pattern: "^/.*"
+
+    ErrorResponse:
+      type: object
+      required: [status, message]
+      properties:
+        status:
+          type: integer
+        message:
+          type: string
