@@ -1,4 +1,5 @@
-DIRS=spec
+DIRS=spec agent ci
+
 TOPTARGETS=lint
 
 default: lint
@@ -11,4 +12,6 @@ $(TOPTARGETS): $(DIRTARGETS)
 $(DIRTARGETS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
-.PHONY: default lint $(DIRTARGETS)
+unittest: agent/.
+
+.PHONY: default lint unittest $(DIRTARGETS)

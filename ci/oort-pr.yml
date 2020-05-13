@@ -1,0 +1,57 @@
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: teliaoss/github-pr-resource
+
+resources:
+  - name: pull-request
+    type: pull-request
+    icon: source-branch
+    source:
+      repository: nsat/oort-ta-dev
+      access_token: ((const_pipeline/github.access_token))
+
+task-error-handling: &task-error-handling
+# Extracts out the common error handling for the PR. Please note, if you include
+# this in your task, you have to have included a `get` step for the pull-request
+# resource.
+  on_failure:
+    put: pull-request
+    params:
+      path: pull-request
+      status: failure
+  on_error:
+    put: pull-request
+    params:
+      path: pull-request
+      status: error
+
+jobs:
+    - name: lint
+      <<: *task-error-handling
+      plan:
+        - get: pull-request
+          trigger: true
+        - task: lint
+          privileged: true
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: amidos/dcind
+                tag: 2
+            inputs:
+              - name: pull-request
+            run:
+              path: /bin/bash
+              args:
+                - -c
+                - |
+                  . /docker-lib.sh
+                  start_docker
+                  apk add make
+                  pip install cpplint
+                  cd pull-request
+                  make lint

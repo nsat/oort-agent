@@ -1,0 +1,38 @@
+resources:
+  - name: repository
+    type: git
+    source:
+      username: ((const_pipeline/github.username))
+      password: ((const_pipeline/github.access_token))
+      uri: https://github.com/nsat/oort-ta-dev
+      paths: 
+        - builder/*
+      # to be changed
+      branch: builder
+
+  - name: base
+    type: docker-image
+    source:
+      repository: docker-registry.cloud.spire.com/spire-base
+      tag: xenial
+      username: ((docker.docker-registry_cloud_spire_com-username))
+      password: ((docker.docker-registry_cloud_spire_com-password))
+
+  - name: sdk-docker
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder
+      aws_access_key_id: ((aws_ecr.access_key_id))
+      aws_secret_access_key: ((aws_ecr.secret_access_key))
+
+jobs:
+  - name: build-sdk
+    plan:
+      - get: base
+        params: {save: true}
+      - get: repository
+        trigger: true
+      - put: sdk-docker
+        params:
+          build: repository/builder
+          load_base: base

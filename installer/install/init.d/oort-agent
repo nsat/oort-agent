@@ -1,0 +1,17 @@
+#!/bin/sh
+
+PID="/var/run/oort-agent.pid"
+CMD="/usr/local/bin/oort-agent"
+WORKDIR="/media/sd1/oort-agent"
+SYSLOG_IDENT="oort-agent"
+
+case $1 in
+  start)
+    echo "starting OORT Agent"
+    start-stop-daemon -S -p $PID -x $CMD -mb -- -w $WORKDIR -s $SYSLOG_IDENT
+    ;;
+  stop)
+    echo "stopping OORT Agent"
+    start-stop-daemon -K -p $PID -x $CMD
+    ;;
+esac
