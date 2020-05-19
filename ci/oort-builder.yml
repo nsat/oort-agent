@@ -10,6 +10,18 @@ resources:
       # to be changed
       branch: builder
 
+  - name: poky-sumo
+    type: git
+    source:
+      uri: https://github.com/nsat/poky
+      branch: sumo
+
+  - name: poky-fido
+    type: git
+    source:
+      uri: https://github.com/nsat/poky
+      branch: fido
+
   - name: base
     type: docker-image
     source:
@@ -17,22 +29,153 @@ resources:
       tag: xenial
       username: ((docker.docker-registry_cloud_spire_com-username))
       password: ((docker.docker-registry_cloud_spire_com-password))
-
-  - name: sdk-docker
+  - name: sdk-docker-armv7a
     type: docker-image
     source:
-      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv7a
+      aws_access_key_id: ((aws_ecr.access_key_id))
+      aws_secret_access_key: ((aws_ecr.secret_access_key))
+
+  - name: sdk-docker-armv8
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv8
+      aws_access_key_id: ((aws_ecr.access_key_id))
+      aws_secret_access_key: ((aws_ecr.secret_access_key))
+
+  - name: dind-build-base
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
       aws_access_key_id: ((aws_ecr.access_key_id))
       aws_secret_access_key: ((aws_ecr.secret_access_key))
 
 jobs:
-  - name: build-sdk
+  - name: build-dind-base
+    build_log_retention:
+      builds: 5
     plan:
       - get: base
         params: {save: true}
       - get: repository
-        trigger: true
-      - put: sdk-docker
+        # trigger: true
+      - put: dind-build-base
         params:
-          build: repository/builder
+          build: repository/builder/base
           load_base: base
+
+  - name: build-sdk-armv7a
+    build_log_retention:
+      builds: 5
+    plan:
+      - get: dind-build-base
+        params: {save: true}
+      - get: poky-fido
+        params: {depth: 1}
+      - get: repository
+        # trigger: true
+      - task: setup
+        image: dind-build-base
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+            - name: poky-fido
+          outputs:
+            - name: deploy
+            - name: repository
+            - name: poky-fido
+          run:
+            path: /bin/bash
+            args: 
+              - -c 
+              - |
+                chown spire deploy
+                cp -r repository/builder/armv8/meta-oort poky-fido/
+      - task: build
+        image: dind-build-base
+        config:
+          platform: linux
+          inputs:
+            - name: poky-fido
+            - name: repository
+            - name: deploy
+          outputs:
+            - name: deploy
+          params:
+            LANG: en_US.UTF-8
+          run:
+            user: spire
+            path: /usr/bin/make
+            args:
+              - -f
+              - repository/builder/Makefile 
+              - armv7a
+              - POKY=poky-fido
+              - REPO=repository/builder
+              - DEST=deploy
+              - OUTPUT=deploy
+      - put: sdk-docker-armv7a
+        params:
+          build: .
+          dockerfile: repository/builder/armv7a/Dockerfile
+          load_base: dind-build-base
+        get_params: {skip_download: true}
+
+  - name: build-sdk-armv8
+    build_log_retention:
+      builds: 5
+    plan:
+      - get: dind-build-base
+        params: {save: true}
+      - get: poky-sumo
+        params: {depth: 1}
+      - get: repository
+        # trigger: true
+      - task: setup
+        image: dind-build-base
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+            - name: poky-sumo
+          outputs:
+            - name: deploy
+            - name: repository
+            - name: poky-sumo
+          run:
+            path: /bin/bash
+            args: 
+              - -c 
+              - |
+                chown spire deploy
+                cp -r repository/builder/armv8/meta-oort poky-sumo/
+      - task: build
+        image: dind-build-base
+        config:
+          platform: linux
+          inputs:
+            - name: poky-sumo
+            - name: repository
+            - name: deploy
+          outputs:
+            - name: deploy
+          params:
+            LANG: en_US.UTF-8
+          run:
+            user: spire
+            path: /usr/bin/make
+            args:
+              - -f
+              - repository/builder/Makefile 
+              - armv8
+              - POKY=poky-sumo
+              - REPO=repository/builder
+              - DEST=deploy
+              - OUTPUT=deploy
+      - put: sdk-docker-armv8
+        params:
+          build: .
+          dockerfile: repository/builder/armv8/Dockerfile
+          load_base: dind-build-base
+        get_params: {skip_download: true}

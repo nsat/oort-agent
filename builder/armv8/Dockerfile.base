@@ -1,0 +1,16 @@
+FROM ubuntu:xenial AS base
+# FROM docker-registry.cloud.spire.com/spire-base:xenial AS base
+# FROM amidos/dcind:2
+RUN apt-get update &&\
+    apt-get -y \
+        install build-essential docker.io \
+        diffstat texinfo gawk chrpath wget cpio \
+        language-pack-en \
+        python python3 \
+        cmake
+FROM base AS builder-poky-sumo
+
+RUN useradd spire
+WORKDIR /W
+RUN chown spire /W
+USER spire

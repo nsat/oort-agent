@@ -12,6 +12,13 @@ resources:
       repository: nsat/oort-ta-dev
       access_token: ((const_pipeline/github.access_token))
 
+  - name: dind-base
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
+      aws_access_key_id: ((aws_ecr.access_key_id))
+      aws_secret_access_key: ((aws_ecr.secret_access_key))
+
 task-error-handling: &task-error-handling
 # Extracts out the common error handling for the PR. Please note, if you include
 # this in your task, you have to have included a `get` step for the pull-request
@@ -35,13 +42,9 @@ jobs:
           trigger: true
         - task: lint
           privileged: true
+          image: dind-base
           config:
             platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                repository: amidos/dcind
-                tag: 2
             inputs:
               - name: pull-request
             run:
@@ -51,7 +54,7 @@ jobs:
                 - |
                   . /docker-lib.sh
                   start_docker
-                  apk add make
                   pip install cpplint
                   cd pull-request
                   make lint
+                  make unittest
