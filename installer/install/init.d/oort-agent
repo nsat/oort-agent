@@ -8,6 +8,8 @@ SYSLOG_IDENT="oort-agent"
 case $1 in
   start)
     echo "starting OORT Agent"
+    # ensure working directory exists
+    test -d $WORKDIR || mkdir -p $WORKDIR
     start-stop-daemon -S -p $PID -x $CMD -mb -- -w $WORKDIR -s $SYSLOG_IDENT
     ;;
   stop)
