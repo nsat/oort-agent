@@ -1,5 +1,4 @@
 DIRS=spec agent ci
-
 TOPTARGETS=lint
 
 default: lint
@@ -10,7 +9,7 @@ default: lint
 DIRTARGETS=$(addsuffix /.,$(DIRS))
 $(TOPTARGETS): $(DIRTARGETS)
 $(DIRTARGETS):
-	$(MAKE) -C $@ $(MAKECMDGOALS)
+	$(MAKE) -C $@ ${MAKECMDGOALS}
 
 unittest: agent/.
 

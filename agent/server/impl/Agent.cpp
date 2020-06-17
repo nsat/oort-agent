@@ -226,6 +226,7 @@ ResponseCode<SendFileResponse> Agent::send_file(const SendFileRequest &req) {
     } catch (const system_error &e) {
         // remove meta file on error
         unlink(destmeta.c_str());
+        Log::error("error in send_file: ?", e.what());
         resp.code = Code::Bad_Request;
         resp.err.setMessage(e.what());
         return resp;
@@ -263,6 +264,7 @@ ResponseCode<FileInfo> Agent::retrieve_file(
         move_file(srcfile, dest, tm.getFileInfo());
         resp.result = FileInfo(tm.getFileInfo());
     } catch (const runtime_error &err) {
+        Log::error("error in retrieve_file: ?", err.what());
         resp.code = Code::Bad_Request;
         resp.err.setMessage(err.what());
         return resp;
@@ -351,7 +353,6 @@ string Agent::getUsername() {
         Log::error("getUsername: user not found for uid ?", static_cast<int>(uid));
         return {};
     }
-    Log::error("getUsername: ?", pwd.pw_name);
     return pwd.pw_name;
 }
 

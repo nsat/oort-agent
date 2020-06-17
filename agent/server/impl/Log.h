@@ -7,7 +7,9 @@
  */
 #pragma once
 
+#include <syslog.h>
 #include <string>
+#include <vector>
 
 /**
  * \brief LogArg - string with implicit conversions
@@ -29,6 +31,8 @@ namespace Log {
     const LogArg EMPTY("<>");
     extern thread_local std::string thread_name;
     enum levels {Debug, Info, Warn, Error};
+    const std::vector<int> syslogLevels({LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERR});
+    const std::vector<std::string> levelNames({"debug", "info", "warn", "error"});
 
     void debug(const std::string &msg,
         const LogArg &param1 = EMPTY, const LogArg &param2 = EMPTY);

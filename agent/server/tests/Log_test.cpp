@@ -18,7 +18,7 @@ TEST_CASE( "Logging levels", "[log]" ) {
         Log::info("Hello, world");
 
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Hello, world" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "info [main] Hello, world" );
     }
     SECTION( "debug (info level)" ) {
         Log::debug("Debug, world");
@@ -29,13 +29,13 @@ TEST_CASE( "Logging levels", "[log]" ) {
     SECTION( "warn (info level)" ) {
         Log::warn("Warn, world");
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Warn, world" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "warn [main] Warn, world" );
     }
 
     SECTION( "error (info level)" ) {
         Log::error("Error, world");
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Error, world" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "error [main] Error, world" );
     }
 
     Log::setLevel(Log::Warn);
@@ -47,9 +47,9 @@ TEST_CASE( "Logging levels", "[log]" ) {
         Log::error("Error, world");
 
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Warning, world" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "warn [main] Warning, world" );
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Error, world" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "error [main] Error, world" );
     }
 
     Log::setLevel(Log::Error);
@@ -61,7 +61,7 @@ TEST_CASE( "Logging levels", "[log]" ) {
         Log::error("Error, world");
 
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Error, world" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "error [main] Error, world" );
     }
 }
 
@@ -79,33 +79,33 @@ TEST_CASE( "Logging with params", "[log]" ) {
         Log::error("Error, ? world", "four");
 
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Warning, three world" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "warn [main] Warning, three world" );
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Error, four world" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "error [main] Error, four world" );
     }
     SECTION( "two params (warn level)" ) {
         Log::warn("Warning, ? ?", "world", "three");
         Log::error("Error, ? world ?", "four", "nine");
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Warning, world three" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "warn [main] Warning, world three" );
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Error, four world nine" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "error [main] Error, four world nine" );
     }
     SECTION( "two params, int conversion (warn level)" ) {
         Log::warn("Warning, ? ?", "world", 3);
         Log::error("Error, ? world ?", 4, "nine");
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Warning, world 3" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "warn [main] Warning, world 3" );
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Error, 4 world nine" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "error [main] Error, 4 world nine" );
     }
     SECTION( "default params (warn level)" ) {
         Log::warn("Warning, world ??", "three");
         Log::error("Error, ? world ?", "four");
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Warning, world three<>" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "warn [main] Warning, world three<>" );
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Error, four world <>" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "error [main] Error, four world <>" );
     }
 }
 
@@ -127,7 +127,7 @@ TEST_CASE( "changing log levels", "[log]" ) {
             Log::setLevel(Log::Debug);
             Log::debug("Debug, world");
             getline(dummy_out, line);
-            REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Debug, world" );
+            REQUIRE( line.substr(TIMESTAMP_LEN) == "debug [main] Debug, world" );
 
             SECTION( "level set back to info") {
                 Log::setLevel(Log::Info);
@@ -140,6 +140,6 @@ TEST_CASE( "changing log levels", "[log]" ) {
 
         Log::warn("Warn, moon");
         getline(dummy_out, line);
-        REQUIRE( line.substr(TIMESTAMP_LEN) == "[main] Warn, moon" );
+        REQUIRE( line.substr(TIMESTAMP_LEN) == "warn [main] Warn, moon" );
     }
 }

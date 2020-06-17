@@ -48,6 +48,7 @@ namespace {
                 s_out << fmttime();
             }
 
+            s_out << levelNames[level] << " ";
             s_out << "[" << thread_name << "] ";
 
             auto mstart = 0;
@@ -64,7 +65,7 @@ namespace {
             s_out << msg.substr(mstart);
 
             if (using_syslog) {
-                syslog(LOG_WARNING, "%s", s_out.str().c_str());
+                syslog(Log::syslogLevels[level], "%s", s_out.str().c_str());
             } else {
                 *l_out << s_out.str() << endl;
             }

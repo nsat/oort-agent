@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "Log.h"
+
 /**
  * \brief Configuration for Agent.
  * 
@@ -29,13 +31,23 @@ class AgentConfig {
 
     int port;  ///< tcp port to listen on
 
-    const char *optstring = "w:t:i:f:s:m:p:";
+    // options:
+    // w - workdir
+    // t - timeout
+    // i - interval
+    // f - config file
+    // s - syslog identifier
+    // m - min disk free
+    // p - port
+    // l - loglevel
+    const char *optstring = "w:t:i:f:s:m:p:l:";
 
     struct {
         bool minfree = true;
         bool interval = true;
         bool maxage = true;
         bool port = true;
+        bool loglevel = true;
     } use_defaults;
 
     const struct {
@@ -43,6 +55,7 @@ class AgentConfig {
         int interval = 3600;
         int maxage = 86400;
         int port = 2005;
+        Log::levels loglevel = Log::levels::Warn;
     } defaults;
 
     void checkDir(const std::string &dir);
