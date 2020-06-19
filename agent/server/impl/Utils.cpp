@@ -145,6 +145,16 @@ bool ends_with(const string &str, const string &tail) {
 }
 
 /**
+ * checks if the given string starts with the head. 
+ * 
+ */
+bool starts_with(const string &str, const string &head) {
+    return (str.length() >= head.length()) &&
+        (str.substr(0, head.length()) == head);
+}
+
+
+/**
  * removes a given tail from a string
  * If the string does not end with the tail, returns
  * the original string.
@@ -156,5 +166,20 @@ string chop(const string &str, const string &tail) {
         return str;
     } else {
         return str.substr(0, str.length() - tail.length());
+    }
+}
+
+/**
+ * removes a given head from a string
+ * If the string does not start with the head, returns
+ * the original string.
+ * 
+ */
+string behead(const string &str, const string &head) {
+    auto s_head = str.substr(0, head.length());
+    if (s_head != head) {
+        return str;
+    } else {
+        return str.substr(head.length());
     }
 }

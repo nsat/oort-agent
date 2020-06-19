@@ -102,6 +102,26 @@ TEST_CASE("chop", "[paths]") {
     }
 }
 
+TEST_CASE("starts_with", "[paths]") {
+    string base("foo.bar.baz");
+    SECTION("1.0 - base") {
+        CHECK(starts_with(base, "foo"));
+        CHECK(starts_with(base, "foo.bar"));
+        CHECK(!starts_with(base, ".bar"));
+        CHECK(starts_with(base, ""));
+        CHECK(!starts_with(base, "a.longer.string"));
+    }
+}
+TEST_CASE("behead", "[paths]") {
+    string base("foo.bar.baz");
+    SECTION("1.0 - base") {
+        CHECK(behead(base, "foo.") == "bar.baz");
+        CHECK(behead(base, "foo.bar") == ".baz");
+        CHECK(behead(base, "bar.") == "foo.bar.baz");
+        CHECK(behead(base, "") == "foo.bar.baz");
+    }
+}
+
 // fragile, because the messages could change
 TEST_CASE( "OSError - fragile test!", "[log]") {
     GIVEN( "errno = EACCES" ) {

@@ -24,6 +24,7 @@ class Agent;
  */
 class Cleaner {
     const Agent *m_agent;
+    std::vector<std::string> m_cleanupDirs;
 
     int m_cleanupInterval = 3600;
     int m_maxAge = 86400;
@@ -40,6 +41,7 @@ class Cleaner {
  public:
     explicit Cleaner(const Agent *agent);
 
+    void setCleanupDirs(const std::vector<std::string> &cleanupDirs);
     void setCleanupInterval(int interval);
     void setMaxAge(int age);
 

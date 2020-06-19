@@ -53,11 +53,12 @@ class Agent {
     std::string transfer_dir;
     std::string upload_dir;
     std::string upgrade_dir;
+    std::string deadletter_dir;
 
     std::string nodename;
     std::string machine;
 
-    void create_dirs();
+    void create_dirs(const std::vector<std::string> &dirs);
 
     std::vector<FileInfo> files_info(const std::string &dir, const std::string &topic);
     TransferMeta read_transfer_meta(const std::string &file);
@@ -73,7 +74,9 @@ class Agent {
     int diskFreePct(const struct statvfs &vfs);
     bool checkDiskFree(int64_t sz);
     bool checkDiskFree(int64_t sz, const struct statvfs &vfs);
+
     void move_file(const std::string &src, const std::string &dest, const FileInfo &fi);
+    void endeaden(const std::string &filepath);
 
     SystemInfo getSysinfo();
 

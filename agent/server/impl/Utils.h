@@ -66,3 +66,5 @@ std::string rootname(const std::string &filepath);
 std::string extension(const std::string &filepath);
 bool ends_with(const std::string &str, const std::string &tail);
 std::string chop(const std::string &str, const std::string &tail);
+bool starts_with(const std::string &str, const std::string &head);
+std::string behead(const std::string &str, const std::string &head);

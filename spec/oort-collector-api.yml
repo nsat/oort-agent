@@ -57,7 +57,7 @@ components:
     SystemInfo:
       title: SystemInfo
       type: object
-      required: [version, diskfree, workdir, uploads, agent_upgrades, username]
+      required: [version, diskfree, workdir, uploads, agent_upgrades, dead, username]
       properties:
         version:
           description: version of the agent currently running
@@ -76,6 +76,9 @@ components:
           type: string
         agent_upgrades:
           description: The directory for agent upgrades to be dropped in
+          type: string
+        dead:
+          description: The dead-letter directory, where corrupted files are moved to
           type: string
         username:
           description: the unix user the Agent is running as
@@ -113,7 +116,10 @@ components:
               type: array
               items:
                 type: string
-                format: UUID
+            dead:
+              type: array
+              items:
+                type: string
         topics:
           description: list of allowed topics
           type: array

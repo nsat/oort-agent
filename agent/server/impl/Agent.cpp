@@ -47,8 +47,11 @@ Agent::Agent(const AgentConfig &cfg) : cleaner(this) {
     transfer_dir = workdir + "/transfers";
     upload_dir = workdir + "/uploads";
     upgrade_dir = workdir + "/upgrades";
-    create_dirs();
+    deadletter_dir = workdir + "/dead";
+    vector<string> all_dirs = {transfer_dir, upload_dir, upgrade_dir, deadletter_dir};
+    create_dirs(all_dirs);
 
+    cleaner.setCleanupDirs(all_dirs);
     cleaner.setCleanupInterval(cfg.cleanupInterval);
     cleaner.setMaxAge(cfg.maxAge);
     cleaner.scheduleCleanup();
@@ -63,8 +66,8 @@ Cleaner& Agent::getCleaner() {
     return cleaner;
 }
 
-void Agent::create_dirs() {
-    for (string dir : {transfer_dir, upload_dir, upgrade_dir}) {
+void Agent::create_dirs(const std::vector<string> &dirs) {
+    for (string dir : dirs) {
         if (mkdir(dir.c_str(), 0700) != 0) {
             if (errno != EEXIST) {
                 Log::error("Error initializing directory ?: ?",
@@ -111,12 +114,17 @@ vector<FileInfo> Agent::files_info(const string &dir, const string &topic) {
       auto fi = Files::file_info(data_file(dir + "/" + *it));
       // verify crc between stored and calculated
       if (tm.getFileInfo().getCrc32() != fi.getCrc32()) {
-          Log::warn("CRC mismatch on ?; skipping",  chop(*it, META_EXT));
+          Log::warn("CRC mismatch on ?; endeadening",  chop(*it, META_EXT));
+          endeaden(dir + "/" + *it);
           continue;
       }
       flist.push_back(tm.getFileInfo());
     } catch (const runtime_error &e) {
-      // ignore errors thrown on bad files from file_info
+      // errors from file_info could be a missing file, or a non-file file
+      // error reading the transfer meta could be a corrupt or non-schema
+      // file
+      Log::error("Error in files_info handling ?: ?", *it, e.what());
+      endeaden(dir + "/" + *it);
     }
     if (flist.size() > max_query) {
         break;
@@ -139,21 +147,23 @@ TransferMeta Agent::transfer_meta(const SendFileRequest &req, const FileInfo &fi
 
 TransferMeta Agent::read_transfer_meta(const string &file) {
     TransferMeta tm;
-    ifstream meta(file);
+    ifstream metafile(file);
 
-    if (meta.fail()) {
-        Log::error("Error opening ?: ?", file, OSError());
+    if (metafile.fail()) {
+        Log::error("Error opening ?: ? - endeadening", file, OSError());
+        endeaden(file);
         // throw a runtime error
         // Can't rely on ifstream::failure, see
         // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66145
         throw runtime_error("error reading metadata");
     }
     try {
-        from_jsonfile(meta, tm);
+        from_jsonfile(metafile, tm);
     }
     catch (const nlohmann::json::exception &e) {
         // log parse errors, then rethrow as a runtime error
-        Log::error("Error parsing ?: ?", file, e.what());
+        Log::error("Error parsing ?: ? - endeadening", file, e.what());
+        endeaden(file);
         throw runtime_error("error parsing metadata");
     }
 
@@ -263,8 +273,16 @@ ResponseCode<FileInfo> Agent::retrieve_file(
         auto tm = read_transfer_meta(src_meta);
         move_file(srcfile, dest, tm.getFileInfo());
         resp.result = FileInfo(tm.getFileInfo());
+    } catch (const system_error &err) {
+        // don't endeaden the file in this case, since the error
+        // was related to the state of the system and NOT the file itself
+        Log::error("system error in retrieve_file: ?", err.what());
+        resp.code = Code::Bad_Request;
+        resp.err.setMessage(err.what());
+        return resp;
     } catch (const runtime_error &err) {
-        Log::error("error in retrieve_file: ?", err.what());
+        endeaden(srcfile);
+        Log::error("error in retrieve_file, endeadening ?: ?", srcid, err.what());
         resp.code = Code::Bad_Request;
         resp.err.setMessage(err.what());
         return resp;
@@ -365,6 +383,7 @@ SystemInfo Agent::getSysinfo() {
     si.setWorkdir(transfer_dir);
     si.setUploads(upload_dir);
     si.setAgentUpgrades(upgrade_dir);
+    si.setDead(deadletter_dir);
     si.setUsername(getUsername());
     si.setNodename(nodename);
     si.setMachine(machine);
@@ -384,6 +403,7 @@ ResponseCode<InfoResponse> Agent::collector_info(InfoRequest &req) {
 
     InfoResponse_available available;
     available.setFiles(Files::file_names(transfer_dir));
+    available.setDead(Files::file_names(deadletter_dir));
     resp.result.setAvailable(available);
 
     resp.code = Code::Ok;
@@ -407,6 +427,45 @@ bool Agent::checkTopic(const std::string &topic) {
         } else {
             return false;
         }
+    }
+}
+
+/*
+ * move a file and its pair to the dead-letter box
+ * 
+ * endeaden - verb; make something dead or more dead.  Opposite of 'enliven'.
+ * 
+ * When file corruption is detected, the file should be endeadened, so that it
+ * does not *repeatedly* get detected, and logged, as corrupt.  Since the
+ * files come in pairs (.data and .meta) the other side of the pair is moved as well.
+ * The dead-letter folder should be on the same filesystem as the other
+ * working directories, so a simple atomic rename should work in all cases.
+ */
+void Agent::endeaden(const string &filepath) {
+    [[unlikely]] if (!(starts_with(filepath, transfer_dir) ||
+          starts_with(filepath, upload_dir) ||
+          starts_with(filepath, upgrade_dir))) {
+        Log::error("attempt to endeaden a file outside working directory: ?", filepath);
+        return;
+    }
+
+    string twin;
+    if (ends_with(filepath, META_EXT)) {
+        twin = data_file(filepath);
+    } else if (ends_with(filepath, DATA_EXT)) {
+        twin = meta_file(filepath);
+    } else {
+        Log::error("attempt to endeaden a non-oort file: ?", filepath);
+        return;
+    }
+
+    string new_path = deadletter_dir + "/" + tailname(filepath);
+    if (rename(filepath.c_str(), new_path.c_str()) != 0) {
+        Log::error("attempt to endeaden ? failed: ?", filepath, OSError(""));
+    }
+    string new_twin_path = deadletter_dir + "/" + tailname(twin);
+    if (rename(twin.c_str(), new_twin_path.c_str()) != 0) {
+        Log::error("attempt to endeaden (twin) ? failed: ?", twin, OSError(""));
     }
 }
 
@@ -449,6 +508,10 @@ void Agent::move_file(const string &src, const string &dest, const FileInfo &fi)
     // abort if destination file exists
     if (access(dest.c_str(), F_OK) == 0) {
         throw system_error(EEXIST, generic_category(), "move_file error - file exists");
+    }
+    FileInfo precheck = Files::file_info(src);
+    if (precheck.getCrc32() != fi.getCrc32()) {
+        throw runtime_error("move_file: CRC Check failed on source file");
     }
     if (rename(src.c_str(), dest.c_str()) == 0) {
         // easy path: same filesystem

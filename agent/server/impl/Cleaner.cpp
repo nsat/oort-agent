@@ -31,6 +31,13 @@ Cleaner::Cleaner(const Agent *agent) : m_agent(agent) {
     workerRunning = false;
 }
 
+void Cleaner::setCleanupDirs(const vector<string> &cleanupDirs) {
+    for (string dir : cleanupDirs) {
+        Log::info("configure cleanup directory: ?", dir);
+    }
+    m_cleanupDirs = cleanupDirs;
+}
+
 void Cleaner::setCleanupInterval(int interval) {
     Log::info("setting cleanup interval to ? seconds", interval);
     m_cleanupInterval = interval;
@@ -43,7 +50,7 @@ void Cleaner::setMaxAge(int age) {
 
 void Cleaner::doCleanup() {
     Log::debug("run Cleaner::doCleanup");
-    for (string dir : {m_agent->transfer_dir, m_agent->upload_dir, m_agent->upgrade_dir}) {
+    for (string dir : m_cleanupDirs) {
         Log::info("Cleaning ?", dir);
         cleanOldFiles(dir);
     }

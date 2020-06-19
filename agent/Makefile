@@ -85,12 +85,13 @@ ${BUILD}/%.bpl: ${SPEC_DIR}/%.yml | dirs
 	docker run --rm \
 		-v /:/local \
 		-w /local/${CURDIR} \
+		-u`id -u` \
 		$(OAPI_GENERATOR) generate \
 		-i $< \
 		-g $(OAPI_TARGET) \
 		-o ${BUILD}/$(SERVER_BASE)/ \
 		--config $(SPEC_DIR)/oapi-config.yaml
-	@rm -f $(OVERLAY_FILES)
+	@touch -c -d@0 $(OVERLAY_FILES)
 	touch $@
 
 ${BUILD}/oort-sdk-api: ${BUILD}/oort-sdk-api.bpl 
@@ -105,17 +106,17 @@ autogen: $(BUILD)/oort-sdk-api $(BUILD)/oort-collector-api $(OVERLAY_FILES)
 $(OVERLAY_FILES): ${BUILD}/${SERVER_BASE}/%: ${SERVER_BASE}/%
 	cp $< $@
 
-${BUILD}/${SERVER_BASE}/Makefile: ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api $(addprefix ${BUILD}/,$(CMAKE_SRCS))
+${BUILD}/${SERVER_BASE}/Makefile: $(OVERLAY_FILES) ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api $(addprefix ${BUILD}/,$(CMAKE_SRCS))
 	cd ${BUILD}/$(SERVER_BASE) && \
 		cmake ${CMAKE_EXTRA} . && \
 		make ONION Catch2 NLOHMANN
 
-${BUILD}/${SERVER_BASE}/api-server: $(OVERLAY_FILES) ${BUILD}/${SERVER_BASE}/Makefile 
+${BUILD}/${SERVER_BASE}/api-server: ${BUILD}/${SERVER_BASE}/Makefile $(OVERLAY_FILES) 
 	rm -f $@
 	cd ${BUILD}/$(SERVER_BASE) && \
 		$(MAKE) api-server/fast 
 
-${BUILD}/${SERVER_BASE}/test_agent: $(OVERLAY_FILES) ${BUILD}/${SERVER_BASE}/Makefile 
+${BUILD}/${SERVER_BASE}/test_agent: ${BUILD}/${SERVER_BASE}/Makefile $(OVERLAY_FILES) 
 	cd ${BUILD}/$(SERVER_BASE) && \
 		$(MAKE) test_agent/fast 
 
@@ -126,7 +127,7 @@ ${BUILD}/oort-server: ${BUILD}/${SERVER_BASE}/api-server
 ${SERVER_BASE}/impl/version.h:
 	sh mk-version.sh > $@
 
-full: $(OVERLAY_FILES) ${BUILD}/${SERVER_BASE}/Makefile 
+full: ${BUILD}/${SERVER_BASE}/Makefile $(OVERLAY_FILES) 
 	cd ${BUILD}/$(SERVER_BASE) && \
 		cmake ${CMAKE_EXTRA} -D${LP_EXTRA} . && \
 		$(MAKE) ${LP_EXTRA}
@@ -161,7 +162,7 @@ clean-overlay: dirs
 
 clean: clean-cmake clean-objs clean-overlay
 
-cmake: $(OVERLAY_FILES) ${BUILD}/${SERVER_BASE}/Makefile 
+cmake: ${BUILD}/${SERVER_BASE}/Makefile $(OVERLAY_FILES) 
 	cd ${BUILD}/$(SERVER_BASE) && \
 		cmake ${CMAKE_EXTRA} . && \
 		make ONION Catch2 NLOHMANN
