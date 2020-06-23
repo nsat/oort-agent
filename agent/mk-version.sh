@@ -13,6 +13,6 @@ cat << EOF
 #pragma once
 
 #define BUILD_VERSION "$(git describe --tags)"
-#define RELEASE_VERSION "1.0"
+#define RELEASE_VERSION "1.1"
 #define API_VERSION "1.0"
 EOF

@@ -1,7 +1,7 @@
 openapi: '3.0.3'
 info:
   title: OORT Agent Collector Interface
-  version: '1.0'
+  version: '1.1'
 servers:
   - url: http://localhost:2005/collector/v1
 paths:
