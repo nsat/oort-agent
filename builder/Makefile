@@ -27,7 +27,7 @@ armv7a-docker: armv7a
 
 armv8: export BRANCH=sumo
 armv8: export ARCH=armv8
-armv7a: export SDK=poky-glibc-x86_64-meta-toolchain-aarch64-toolchain-2.5.1.sh
+armv8: export SDK=poky-glibc-x86_64-meta-toolchain-aarch64-toolchain-2.5.1.sh
 armv8: sdk
 armv8-docker: armv8
 	docker build . -f ${ABSREPO}/armv8/Dockerfile --target sdk -t sdk-armv8
@@ -40,6 +40,8 @@ ${POKY}/.git:
 
 _BUILD_SDK=${ABSDEST}/build/tmp/deploy/sdk/${SDK} 
 sdk: ${OUTPUT}/${SDK}
+
+${OUTPUT}/${SDK}: ${_BUILD_SDK}
 	cp ${_BUILD_SDK} ${OUTPUT}/
 
 ${_BUILD_SDK}: export TEMPLATECONF=${ABSREPO}/${ARCH}/conf
