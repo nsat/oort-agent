@@ -47,8 +47,8 @@ ${OUTPUT}/${SDK}: ${_BUILD_SDK}
 ${_BUILD_SDK}: export TEMPLATECONF=${ABSREPO}/${ARCH}/conf
 ${_BUILD_SDK}: export BUILDDIR=${ABSDEST}/build
 ${_BUILD_SDK}: poky
-	test -d ${POKY}/meta-oort || cp -r ${ABSREPO}/${ARCH}/meta-oort ${POKY}/
-	test -d ${ABSDEST}/build || mkdir -p ${ABSDEST}/build
+	test -d ${ABSDEST}/build/conf || mkdir -p ${ABSDEST}/build/conf
+	cp -r ${ABSREPO}/${ARCH}/conf/machine ${ABSDEST}/build/conf
 	test -d ${OUTPUT} || mkdir -p ${OUTPUT}
 	. ${POKY}/oe-init-build-env ${ABSDEST}/build ; \
 	test "${SKIP}" == "y" || bitbake meta-toolchain -c populate_sdk
