@@ -14,7 +14,7 @@ FROM base AS install
 ARG SDK
 USER root
 
-COPY deploy/build/tmp/deploy/sdk/$SDK /tmp
+COPY deploy/$SDK /tmp
 RUN bash /tmp/$SDK -y
 
 FROM base as sdk
