@@ -243,5 +243,5 @@ BB_NUMBER_THREADS = "8"
 PARALLEL_MAKE = "-j 6"
 
 # ensure zlib is included
-IMAGE_INSTALL_append = " zlib"
-TOOLCHAIN_TARGET_TASK_append = " zlib"
+IMAGE_INSTALL_append = " zlib curl"
+TOOLCHAIN_TARGET_TASK_append = " zlib curl"
