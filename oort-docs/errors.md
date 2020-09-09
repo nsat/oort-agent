@@ -8,7 +8,10 @@ import sys
 
 agent = SdkApi()
 
-req = SendFileRequest(destination="ground", topic=sys.argv[1], filepath=sys.argv[2])
+req = SendFileRequest(
+    destination="ground",
+    topic=sys.argv[1],
+    filepath=sys.argv[2])
 
 try:
     res = agent.send_file(req)

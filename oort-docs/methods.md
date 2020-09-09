@@ -33,7 +33,10 @@ Sends a file from the payload to the ground.
 ```python
 from oort_sdk_client.models import SendFileRequest, RetrieveFileRequest
 
-req = SendFileRequest(destination="ground", topic="my-topic", filepath="/path/to/file")
+req = SendFileRequest(
+    destination="ground",
+    topic="my-topic",
+    filepath="/path/to/file")
 resp = agent.send_file(req)
 
 print("File sent successfully, UUID is {}".format(resp.uuid)))
@@ -165,7 +168,8 @@ else:
 
     finfo = SdkAPI_retrieveFile(client, req);
     if (finfo != NULL) {
-        fprintf(stderr, "retrieved id = %s to %s", req->id, finfo->path);
+        fprintf(stderr, "retrieved id = %s to %s",
+               req->id, finfo->path);
         file_info_free(finfo);
     }
 

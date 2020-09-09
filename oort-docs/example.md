@@ -5,9 +5,13 @@
 
 ```python
 from oort_sdk_client import SdkApi
-from oort_sdk_client.models import SendFileRequest, SendOptions, TTLParams
+from oort_sdk_client.models import (
+    SendFileRequest, SendOptions, TTLParams
+)
 
-from custom_application import observe, process, save_to_file, create_logs
+from custom_application import (
+    observe, process, save_to_file, create_logs
+)
 
 # these topic names will be provided by the Spire Constellation Ops team
 oort_topic_primary = "custom-application"
@@ -25,11 +29,12 @@ while True:
     raw_filename = save_to_file(raw_observation)
     processed_filename = save_to_file(processed_observation)
 
-    # send the important processed data
+    # send the important processed data with default options
     req = SendFileRequest(
         destination="ground",
         topic=oort_topic_primary,
-        filepath=processed_filename)
+        filepath=processed_filename,
+        options=SendOptions())
     resp = agent.send_file(req)
 
     # logfiles may be very useful, but not as critical as the important 
@@ -97,7 +102,8 @@ while True:
 
     available_primary = agent.query_available_files(oort_topic_primary)
     if not available_primary.files:
-        print("No files available for retreival from {}".format(oort_topic_primary))
+        print("No files available for retreival from {}"
+            .format(oort_topic_primary))
     else:
         for item in available_primary.files:
             print("Retrieving {id} ({path})".format(item.id, item.path))
@@ -107,12 +113,14 @@ while True:
                 save_path=save_path)
             agent.retrieve_file(req)
 
-            # the application can now upload or process the data as required
+            # the application can now upload or process the data as
+            # required
             upload_data(save_path, "processed")
 
     available_raw = agent.query_available_files(oort_topic_raw)
     if not available_raw.files:
-        print("No files available for retreival from {}".format(oort_topic_raw))
+        print("No files available for retreival from {}"
+            .format(oort_topic_raw))
     else:
         for item in available_raw.files:
             print("Retrieving {id} ({path})".format(item.id, item.path))
