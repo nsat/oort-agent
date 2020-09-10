@@ -20,5 +20,5 @@ except ApiException as e:
     print("Error sending file: {}".format(e.body))
 ```
 
-Errors are returned as a [ErrorResponse](errorresponse) value,
+Errors are returned as a [ErrorResponse](#errorresponse) value,
 which contains an error code and a message.  

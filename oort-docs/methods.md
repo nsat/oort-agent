@@ -66,13 +66,15 @@ Send a file via the API.
 
 ### Arguments
 
-[SendFileRequest](#sendfilerequest)
+| Type | Description |
+| ---- | ----------- |
+| [SendFileRequest](#sendfilerequest) | SendFileRequest Object |
 
 ### Return value
 
-[SendFileResponse](#sendfileresponse)
-
-Contains the UUID assigned for this file transfer.
+| Type | Description |
+| ---- | ----------- |
+| [SendFileResponse](#sendfileresponse) | Contains the UUID assigned for this file transfer |
 
 ## QueryAvailableFiles
 
@@ -117,12 +119,17 @@ Query the OORT agent for any files ready to be retrieved.
 
 ### Arguments
 
-* topic
-The topic to check for available files.
+| Type | Description |
+| ---- | ----------- |
+| string | The topic to check for available files. |
+
 
 ### Return value
 
-[AvailableFilesResponse](#availablefilesresponse)
+| Type | Description |
+| ---- | ----------- |
+| [AvailableFilesResponse](#availablefilesresponse) | AvailableFilesResponse Object |
+
 
 ## RetrieveFile
 
@@ -181,10 +188,14 @@ Retrieve an available file from the OORT agent.
 
 ### Arguments
 
-[RetrieveFileRequest](#retrievefilerequest)
+| Type | Description |
+| ---- | ----------- |
+| [RetrieveFileRequest](#retrievefilerequest) | RetrieveFileRequest Object |
+
+
 
 ### Return value
 
-[FileInfo](#fileinfo)
-
-The details about the file retrieved.
+| Type | Description |
+| ---- | ----------- |
+| [FileInfo](#fileinfo) | Details about the file retrieved |
