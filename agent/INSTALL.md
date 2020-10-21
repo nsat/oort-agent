@@ -3,8 +3,8 @@
 ## Install Guidelines
 
 The OORT Agent needs to be started up at system boot
-time.  Two systems are supported for this,
-`monit` and `daemontools`.
+time.  Three systems are supported for this,
+`monit`, `systemd` and `daemontools`.
 
 ## Common Requirements
 
@@ -91,6 +91,10 @@ The `daemontools` setup requires a single file, `/service/oort-agent/run`.
 Any setting changes are made in this file.
 
 Examples of these files can be found in `support/daemontools`.
+
+## Systemd Setup
+
+The `systemd` setup requires a single file, `installer/install/systemd/system/oort-agent.service`.
 
 
 ## Install Steps
