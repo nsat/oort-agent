@@ -15,6 +15,8 @@ docs:
 DIRTARGETS=$(addsuffix /.,$(DIRS))
 $(TOPTARGETS): $(DIRTARGETS)
 $(DIRTARGETS):
-	$(MAKE) -C $@ $(MAKECMDGOALS)
+	$(MAKE) -C $@ ${MAKECMDGOALS}
 
-.PHONY: docs default lint $(DIRTARGETS)
+unittest: agent/.
+
+.PHONY: default lint unittest $(DIRTARGETS)

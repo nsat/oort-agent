@@ -1,0 +1,14 @@
+[Unit]
+Description=Spire Oort Agent
+After=network.target
+
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=root
+ExecStart=/usr/local/bin/oort-agent -w /opt/oort-agent/
+
+[Install]
+WantedBy=multi-user.target
