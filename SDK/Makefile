@@ -10,6 +10,9 @@ default: $(CLIENTS) collector
 
 collector: python-collector-client/README.md
 
+ROOT=$(realpath ${CURDIR}/..)
+CUR=$(notdir ${CURDIR})
+
 lint: 
 	@echo ok
 
@@ -20,7 +23,7 @@ $(CLIENTS): %: %-sdk-client/README.md
 
 %-sdk-client/README.md:
 	docker run --rm \
-	  -v /:/local -w /local/${CURDIR} \
+	  -v ${ROOT}:/local -w /local/${CUR} \
 	  ${OPENAPI_IMAGE} generate \
 	  -i ../spec/oort-sdk-api.yml \
 	  -o $*-sdk-client/ \
