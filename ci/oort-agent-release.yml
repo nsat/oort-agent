@@ -41,22 +41,22 @@ resources:
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
-      aws_access_key_id: ((ecr_credentials.784407737194.us-west-2.aws_access_key_id))
-      aws_secret_access_key: ((ecr_credentials.784407737194.us-west-2.aws_secret_access_key))
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
   - name: sdk-docker-armv7a
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv7a
-      aws_access_key_id: ((ecr_credentials.784407737194.us-west-2.aws_access_key_id))
-      aws_secret_access_key: ((ecr_credentials.784407737194.us-west-2.aws_secret_access_key))
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
   - name: sdk-docker-armv8
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv8
-      aws_access_key_id: ((ecr_credentials.784407737194.us-west-2.aws_access_key_id))
-      aws_secret_access_key: ((ecr_credentials.784407737194.us-west-2.aws_secret_access_key))
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
 jobs:
   - name: build-agent-x86

@@ -20,8 +20,8 @@ resources:
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
-      aws_access_key_id: ((ecr_credentials.784407737194.us-west-2.aws_access_key_id))
-      aws_secret_access_key: ((ecr_credentials.784407737194.us-west-2.aws_secret_access_key))
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
 task-error-handling: &task-error-handling
 # Extracts out the common error handling for the PR. Please note, if you include
