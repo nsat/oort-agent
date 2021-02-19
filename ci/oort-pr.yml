@@ -10,7 +10,7 @@ resources:
     icon: source-branch
     source:
       repository: nsat/oort-ta-dev
-      access_token: ((const_pipeline/github.access_token))  # TODO update with red cred
+      access_token: ((github.oort_red_personal_access_token))
       paths:
         - agent/
         - installer/

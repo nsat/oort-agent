@@ -2,8 +2,8 @@ resources:
   - name: repository
     type: git
     source:
-      username: ((const_pipeline/github.username))  # TODO update with red cred
-      password: ((const_pipeline/github.access_token))
+      username: ((github.oort_red_username))
+      password: ((github.oort_red_personal_access_token))
       uri: https://github.com/nsat/oort-ta-dev
       branch: master
 
