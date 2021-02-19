@@ -11,6 +11,10 @@ resources:
     source:
       repository: nsat/oort-ta-dev
       access_token: ((const_pipeline/github.access_token))  # TODO update with red cred
+      paths:
+        - agent/
+        - installer/
+        - spec/
 
   - name: dind-base
     type: docker-image
@@ -38,13 +42,56 @@ jobs:
     - name: lint
       <<: *task-error-handling
       plan:
+        - get: dind-base
+          params:
+            save: true
         - get: pull-request
           trigger: true
+          params:
+            list_changed_files: true
+        - task: version-check
+          image: dind-base
+          config:
+            platform: linux
+            container_limits: {}
+            inputs:
+              - name: pull-request
+            run:
+              path: /bin/grep
+              args:
+                - VERSION
+                - pull-request/.git/resource/changed_files
+          on_failure:
+            put: pull-request
+            params:
+              path: pull-request
+              status: failure
+              description: VERSION file not included in pull-request
+        - task: tag-check
+          image: dind-base
+          config:
+            platform: linux
+            container_limits: {}
+            inputs:
+              - name: pull-request
+            run:
+              path: /bin/bash
+              dir: pull-request
+              args:
+                - -c
+                - "! git show --oneline -s refs/tags/v`cat VERSION`"
+          on_failure:
+            put: pull-request
+            params:
+              path: pull-request
+              status: failure
+              description: tag for version already exists
         - task: lint
           privileged: true
           image: dind-base
           config:
             platform: linux
+            container_limits: {}
             inputs:
               - name: pull-request
             run:
@@ -58,3 +105,8 @@ jobs:
                   cd pull-request
                   make lint
                   make unittest
+        - put: pull-request
+          params:
+            description: automated checks successful
+            path: pull-request
+            status: success
