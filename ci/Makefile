@@ -1,11 +1,8 @@
-.PHONY: install lint
+.PHONY: install-pr install-build trigger-build install-release trigger-release lint
 
-# Add hyphen at end, e.g. "red-"
-EXPORT_COLOR ?= red-
-
-TEAM = $(EXPORT_COLOR)constellation
+TEAM = constellation
 PREFIX = oort
-TARGET = $(EXPORT_COLOR)$(PREFIX)
+TARGET = $(PREFIX)
 
 login:
 	fly -t $(TARGET) login --team-name=$(TEAM) --concourse-url=https://ci.spire.sh
@@ -19,14 +16,6 @@ install-build:
 trigger-build:
 	fly -t $(TARGET) trigger-job -j $(PREFIX):sdk-builder/build-sdk-armv8
 	fly -t $(TARGET) trigger-job -j $(PREFIX):sdk-builder/build-sdk-armv7a
-
-install-release:
-	fly -t $(TARGET) set-pipeline -p $(PREFIX):agent-release -c oort-agent-release.yml
-
-trigger-release:
-	fly -t $(TARGET) trigger-job -j $(PREFIX):agent-release/build-agent-x86
-	fly -t $(TARGET) trigger-job -j $(PREFIX):agent-release/build-agent-armv7a
-	fly -t $(TARGET) trigger-job -j $(PREFIX):agent-release/build-agent-armv8
 
 install-release:
 	fly -t $(TARGET) set-pipeline -p $(PREFIX):agent-release -c oort-agent-release.yml
