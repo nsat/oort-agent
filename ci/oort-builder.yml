@@ -2,10 +2,10 @@ resources:
   - name: repository
     type: git
     source:
-      username: ((const_pipeline/github.username))
-      password: ((const_pipeline/github.access_token))
+      username: ((github.oort_red_username))
+      password: ((github.oort_red_personal_access_token))
       uri: https://github.com/nsat/oort-ta-dev
-      paths: 
+      paths:
         - builder/*
       # to be changed
       branch: builder
@@ -25,30 +25,31 @@ resources:
   - name: base
     type: docker-image
     source:
-      repository: docker-registry.cloud.spire.com/spire-base
-      tag: xenial
-      username: ((docker.docker-registry_cloud_spire_com-username))
-      password: ((docker.docker-registry_cloud_spire_com-password))
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/spire-base
+      tags: xenial
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
+
   - name: sdk-docker-armv7a
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv7a
-      aws_access_key_id: ((aws_ecr.access_key_id))
-      aws_secret_access_key: ((aws_ecr.secret_access_key))
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
   - name: sdk-docker-armv8
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv8
-      aws_access_key_id: ((aws_ecr.access_key_id))
-      aws_secret_access_key: ((aws_ecr.secret_access_key))
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
   - name: dind-build-base
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
-      aws_access_key_id: ((aws_ecr.access_key_id))
-      aws_secret_access_key: ((aws_ecr.secret_access_key))
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
 jobs:
   - name: build-dind-base
@@ -78,6 +79,7 @@ jobs:
         image: dind-build-base
         config:
           platform: linux
+          container_limits: {}
           inputs:
             - name: repository
             - name: poky-fido
@@ -87,8 +89,8 @@ jobs:
             - name: poky-fido
           run:
             path: /bin/bash
-            args: 
-              - -c 
+            args:
+              - -c
               - |
                 chown spire deploy
                 cp -r repository/builder/armv8/meta-oort poky-fido/
@@ -96,6 +98,7 @@ jobs:
         image: dind-build-base
         config:
           platform: linux
+          container_limits: {}
           inputs:
             - name: poky-fido
             - name: repository
@@ -109,7 +112,7 @@ jobs:
             path: /usr/bin/make
             args:
               - -f
-              - repository/builder/Makefile 
+              - repository/builder/Makefile
               - armv7a
               - POKY=poky-fido
               - REPO=repository/builder
@@ -136,6 +139,7 @@ jobs:
         image: dind-build-base
         config:
           platform: linux
+          container_limits: {}
           inputs:
             - name: repository
             - name: poky-sumo
@@ -145,14 +149,15 @@ jobs:
             - name: poky-sumo
           run:
             path: /bin/bash
-            args: 
-              - -c 
+            args:
+              - -c
               - |
                 chown spire deploy
                 cp -r repository/builder/armv8/meta-oort poky-sumo/
       - task: build
         image: dind-build-base
         config:
+          container_limits: {}
           platform: linux
           inputs:
             - name: poky-sumo
@@ -167,7 +172,7 @@ jobs:
             path: /usr/bin/make
             args:
               - -f
-              - repository/builder/Makefile 
+              - repository/builder/Makefile
               - armv8
               - POKY=poky-sumo
               - REPO=repository/builder

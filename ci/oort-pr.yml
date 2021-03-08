@@ -10,14 +10,18 @@ resources:
     icon: source-branch
     source:
       repository: nsat/oort-ta-dev
-      access_token: ((const_pipeline/github.access_token))
+      access_token: ((github.oort_red_personal_access_token))
+      paths:
+        - agent/
+        - installer/
+        - spec/
 
   - name: dind-base
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
-      aws_access_key_id: ((aws_ecr.access_key_id))
-      aws_secret_access_key: ((aws_ecr.secret_access_key))
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
 task-error-handling: &task-error-handling
 # Extracts out the common error handling for the PR. Please note, if you include
@@ -38,13 +42,56 @@ jobs:
     - name: lint
       <<: *task-error-handling
       plan:
+        - get: dind-base
+          params:
+            save: true
         - get: pull-request
           trigger: true
+          params:
+            list_changed_files: true
+        - task: version-check
+          image: dind-base
+          config:
+            platform: linux
+            container_limits: {}
+            inputs:
+              - name: pull-request
+            run:
+              path: /bin/grep
+              args:
+                - VERSION
+                - pull-request/.git/resource/changed_files
+          on_failure:
+            put: pull-request
+            params:
+              path: pull-request
+              status: failure
+              description: VERSION file not included in pull-request
+        - task: tag-check
+          image: dind-base
+          config:
+            platform: linux
+            container_limits: {}
+            inputs:
+              - name: pull-request
+            run:
+              path: /bin/bash
+              dir: pull-request
+              args:
+                - -c
+                - "! git show --oneline -s refs/tags/v`cat VERSION`"
+          on_failure:
+            put: pull-request
+            params:
+              path: pull-request
+              status: failure
+              description: tag for version already exists
         - task: lint
           privileged: true
           image: dind-base
           config:
             platform: linux
+            container_limits: {}
             inputs:
               - name: pull-request
             run:
@@ -58,3 +105,8 @@ jobs:
                   cd pull-request
                   make lint
                   make unittest
+        - put: pull-request
+          params:
+            description: automated checks successful
+            path: pull-request
+            status: success
