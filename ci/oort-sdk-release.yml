@@ -1,0 +1,123 @@
+resources:
+  - name: repository
+    type: git
+    source:
+      username: ((github.oort_red_username))
+      password: ((github.oort_red_personal_access_token))
+      uri: https://github.com/nsat/oort-ta-dev
+      branch: master
+      path: SDK/
+
+  - name: SDK-python
+    type: git
+    source:
+      username: ((github.oort_red_username))
+      password: ((github.oort_red_personal_access_token))
+      uri: https://github.com/nsat/oort-sdk-python
+      branch: v1dev
+
+  - name: SDK-c
+    type: git
+    source:
+      username: ((github.oort_red_username))
+      password: ((github.oort_red_personal_access_token))
+      uri: https://github.com/nsat/oort-sdk-c
+      branch: v1dev
+
+  - name: dind-base
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
+      aws_access_key_id: ((aws_ecr.access_key_id))
+      aws_secret_access_key: ((aws_ecr.secret_access_key))
+
+jobs:
+  - name: build-python-SDK
+    plan:
+      - get: repository
+        trigger: true
+      - get: SDK-python
+      - get: dind-base
+        params: {save: true}
+      - task: build
+        privileged: true
+        image: dind-base
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+            - name: SDK-python
+          outputs:
+            - name: SDK-python
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                . /docker-lib.sh
+                start_docker
+                ( cd repository/SDK;  make python-sdk-client/README.md )
+                cp -r repository/SDK/python-sdk-client/. SDK-python/
+      - task: git add
+        image: dind-base
+        config:
+          platform: linux
+          inputs:
+            - name: SDK-python
+          outputs:
+            - name: SDK-python
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                cd SDK-python
+                git add .
+                git -c user.email=jeff.rogers@spire.com -c user.name="Concourse-CI obo Jeff R" commit -m "automated commit"
+      - put: SDK-python
+        params: {repository: SDK-python}
+
+  - name: build-c-SDK
+    plan:
+      - get: repository
+        trigger: true
+      - get: SDK-c
+      - get: dind-base
+        params: {save: true}
+      - task: build
+        privileged: true
+        image: dind-base
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+            - name: SDK-c
+          outputs:
+            - name: SDK-c
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                . /docker-lib.sh
+                start_docker
+                ( cd repository/SDK;  make c-sdk-client/README.md )
+                cp -r repository/SDK/c-sdk-client/. SDK-c/
+      - task: git add
+        image: dind-base
+        config:
+          platform: linux
+          inputs:
+            - name: SDK-c
+          outputs:
+            - name: SDK-c
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                cd SDK-c
+                git add .
+                git -c user.email=jeff.rogers@spire.com -c user.name="Concourse-CI obo Jeff R" commit -m "automated commit"
+      - put: SDK-c
+        params: {repository: SDK-c}
