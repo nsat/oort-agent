@@ -1,0 +1,18 @@
+#!/bin/sh
+
+PID="/var/run/oort-agent.pid"
+CMD="/oort-agent"
+WORKDIR="/workdir"
+
+case $1 in
+  start)
+    echo "starting OORT Agent"
+    $CMD -w $WORKDIR 2>&1 &
+    echo $! > $PID
+    ;;
+  stop)
+    echo "stopping OORT Agent"
+    kill `cat $PID`
+    rm $PID
+    ;;
+esac

@@ -1,0 +1,6 @@
+#!/bin/sh
+CMD=/oort-agent
+WORKDIR=/media/sd1/oort-agent
+SYSLOG_IDENT=oort-agent
+
+exec $CMD -w $WORKDIR -s $SYSLOG_IDENT

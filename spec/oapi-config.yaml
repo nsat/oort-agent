@@ -1,0 +1,3 @@
+serverPort: 2005
+packageName: oort_server
+defaultController: ts_controller

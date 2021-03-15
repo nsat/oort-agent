@@ -1,0 +1,157 @@
+openapi: '3.0.3'
+info:
+  title: OORT Agent Collector Interface
+  version: '1.1'
+servers:
+  - url: http://localhost:2005/collector/v1
+paths:
+  /info:
+    description: >
+        Gather list of available files for collector, along
+        with relevent system information.
+    post:
+      tags:
+        - collector
+      operationId: info
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              "$ref": "#/components/schemas/InfoRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/InfoResponse"
+
+  /meta/{uuid}:
+    description: >
+      return metadata for an id.   This api call is not generally used, but is included
+      to allowe TransferMeta to be referenced.
+    parameters:
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+          format: UUID
+    get:
+      tags:
+        - collector
+      operationId: get_meta
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/TransferMeta"
+        '404':
+          description: Not found
+
+components:
+  schemas:
+    SystemInfo:
+      title: SystemInfo
+      type: object
+      required: [version, diskfree, workdir, uploads, agent_upgrades, dead, username]
+      properties:
+        version:
+          description: version of the agent currently running
+          type: string
+        build:
+          description: build identifier for this agent
+          type: string
+        diskfree:
+          description: free disk space on the workdir filesystem, in bytes
+          type: number
+        workdir:
+          description: The Agent's working directory
+          type: string
+        uploads:
+          description: The directory for uploads to be dropped in
+          type: string
+        agent_upgrades:
+          description: The directory for agent upgrades to be dropped in
+          type: string
+        dead:
+          description: The dead-letter directory, where corrupted files are moved to
+          type: string
+        username:
+          description: the unix user the Agent is running as
+          type: string
+        nodename:
+          description: node id of the host machine
+          type: string
+        machine:
+          description: machine hardware identifier (i.e., processor architecture)
+          type: string
+
+    InfoRequest:
+      title: InfoRequest
+      description: Config data to push with collector handshake
+      type: object
+      properties:
+        topics:
+          description: list of allowed topics
+          type: array
+          items:
+            type: string
+            pattern: "^[-_A-Za-z0-9]+$"
+
+    InfoResponse:
+      title: InfoResponse
+      type: object
+      required: [sysinfo, available, topics]
+      properties:
+        sysinfo:
+          "$ref": "#/components/schemas/SystemInfo"
+        available:
+          type: object
+          properties:
+            files:
+              type: array
+              items:
+                type: string
+            dead:
+              type: array
+              items:
+                type: string
+        topics:
+          description: list of allowed topics
+          type: array
+          items:
+            type: string
+            pattern: "^[-_A-Za-z0-9]+$"
+
+    TransferMeta:
+      title: TransferMeta
+      type: object
+      required: [meta_version, topic, node, time, file_info, send_options]
+      properties:
+        meta_version:
+          type: string
+          description: version of the SDK used to create this object
+        topic:
+          type: string
+          description: The topic that this file was transferred on
+        destination:
+          type: string
+          description: The destination that this file was transferred to
+        node:
+          type: string
+          description: gives the node id of the sender
+        time:
+          type: integer
+          description: the epoch time that the file was sent
+        file_info:
+          "$ref": "oort-sdk-api.yml#/components/schemas/FileInfo"
+        send_options:
+          "$ref": "oort-sdk-api.yml#/components/schemas/SendOptions"
+        extra:
+          type: object
+          additionalProperties:
+              type: string
