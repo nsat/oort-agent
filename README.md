@@ -87,7 +87,7 @@ Defaults:
 The OORT Agent is installed by copying the binary to the target location, and configuring
 the system startup scripts to run it from that location.  
 
-Full details can be found in [INSTALL.md](./INSTALL.md).
+Full details can be found in [INSTALL.md](./agent/INSTALL.md).
 
 ## How to upgrade the OORT Agent
 
@@ -99,4 +99,4 @@ In the usual case, new oort-agent binaries will be uploaded to the host by the O
 If it has been configured, the collector will kick off the upgrade install as well, requiring
 no additional manual steps.
 
-Full details can be found in [UPGRADE.md](./UPGRADE.md).
+Full details can be found in [UPGRADE.md](./agent/UPGRADE.md).
