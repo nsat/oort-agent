@@ -3,11 +3,13 @@ project (CGenerator)
 
 cmake_policy(SET CMP0063 NEW)
 
+set(CMAKE_SYSROOT $ENV{CMAKE_SYSROOT})
+set(CMAKE_C_STANDARD 99)
+# set(CMAKE_BUILD_TYPE MinsizeRel)
+
 set(CMAKE_C_VISIBILITY_PRESET default)
 set(CMAKE_CXX_VISIBILITY_PRESET default)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
-set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_C_FLAGS -std=c99)
 
 set(pkgName "{{projectName}}")
 
@@ -64,10 +66,14 @@ set(HDRS
 
 # Add library with project file with projectname as library name
 add_library(${pkgName} SHARED ${SRCS} ${HDRS})
+add_library(${pkgName}_static STATIC ${SRCS} ${HDRS})
 # Link dependent libraries
 target_link_libraries(${pkgName} ${CURL_LIBRARIES} )
 #install library to destination
-install(TARGETS ${pkgName} DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(TARGETS ${pkgName} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+install(TARGETS ${pkgName}_static DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+
+install(DIRECTORY api model external include DESTINATION ${CMAKE_INSTALL_PREFIX}/include/oort)
 
 # Setting file variables to null
 set(SRCS "")
