@@ -6,9 +6,9 @@
 # set in targets:
 # BRANCH from poky
 # ARCH to build
-.PHONY: docker armv7a armv7athf armv8
+.PHONY: docker armv7a cortexa9 armv8
 
-docker: armv7a armv7athf armv8
+docker: armv7a cortexa9 armv8
 
 absolutize = $(if $(patsubst /%,,${1}),${CURDIR}/${1},${1})
 
@@ -25,12 +25,12 @@ armv7a: sdk
 armv7a-docker: armv7a
 	docker build . -f ${ABSREPO}/armv7a/Dockerfile --target sdk -t sdk-armv7a
 
-armv7athf: export BRANCH=pyro
-armv7athf: export ARCH=armv7athf
-armv7athf: export SDK=poky-glibc-x86_64-meta-toolchain-armv7athf-vfp-toolchain-1.8.2.sh
-armv7athf: sdk
-armv7athf-docker: armv7athf
-	docker build . -f ${ABSREPO}/armv7athf/Dockerfile --target sdk -t sdk-armv7athf
+cortexa9: export BRANCH=pyro
+cortexa9: export ARCH=cortexa9
+cortexa9: export SDK=poky-glibc-x86_64-meta-toolchain-cortexa9thf-neon-toolchain-1.8.2.sh
+cortexa9: sdk
+cortexa9-docker: cortexa9
+	docker build . -f ${ABSREPO}/cortexa9/Dockerfile --target sdk -t sdk-cortexa9
 
 armv8: export BRANCH=sumo
 armv8: export ARCH=armv8
