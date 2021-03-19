@@ -1,5 +1,5 @@
-ARG SDK=poky-glibc-x86_64-meta-toolchain-armv7athf-vfp-toolchain-1.8.2.sh
-ARG ARCH=armv7athf
+ARG SDK=poky-glibc-x86_64-meta-toolchain-cortexa9thf-neon-toolchain-1.8.2.sh
+ARG ARCH=cortexa9
 
 FROM ubuntu:xenial AS base
 RUN apt-get update &&\
