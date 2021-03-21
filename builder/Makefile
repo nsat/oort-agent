@@ -27,7 +27,7 @@ armv7a-docker: armv7a
 
 cortexa9: export BRANCH=pyro
 cortexa9: export ARCH=cortexa9
-cortexa9: export SDK=poky-glibc-x86_64-meta-toolchain-cortexa9thf-neon-toolchain-1.8.2.sh
+cortexa9: export SDK=poky-glibc-x86_64-meta-toolchain-cortexa9hf-neon-toolchain-2.3.2.sh
 cortexa9: sdk
 cortexa9-docker: cortexa9
 	docker build . -f ${ABSREPO}/cortexa9/Dockerfile --target sdk -t sdk-cortexa9
