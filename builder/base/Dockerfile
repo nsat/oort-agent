@@ -1,4 +1,4 @@
-FROM docker-registry.cloud.spire.com/spire-base:xenial AS base
+FROM spire-base:xenial AS base
 RUN apt-get update &&\
     apt-get -y \
         install build-essential docker.io \
