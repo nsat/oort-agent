@@ -7,8 +7,6 @@ resources:
       uri: https://github.com/nsat/oort-ta-dev
       paths:
         - builder/*
-      # to be changed
-      branch: builder
 
   - name: poky-sumo
     type: git
