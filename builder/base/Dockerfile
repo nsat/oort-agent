@@ -1,4 +1,4 @@
-FROM spire-base:xenial AS base
+FROM 784407737194.dkr.ecr.us-west-2.amazonaws.com/spire-base:xenial AS base
 RUN apt-get update &&\
     apt-get -y \
         install build-essential docker.io \
