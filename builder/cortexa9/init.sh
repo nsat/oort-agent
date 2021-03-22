@@ -1,4 +1,4 @@
 #!/bin/sh
-. /opt/poky/1.8.2/environment-setup-cortexa9thf-neon-poky-linux-gnueabi
+. /opt/poky/2.3.2/environment-setup-cortexa9hf-neon-poky-linux-gnueabi
 export CMAKE_SYSROOT=$SDKTARGETSYSROOT
 exec "$@"
