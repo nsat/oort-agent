@@ -6,9 +6,9 @@
 # set in targets:
 # BRANCH from poky
 # ARCH to build
-.PHONY: docker armv7a armv8
+.PHONY: docker armv7a cortexa9 armv8
 
-docker: armv7a armv8
+docker: armv7a cortexa9 armv8
 
 absolutize = $(if $(patsubst /%,,${1}),${CURDIR}/${1},${1})
 
@@ -24,6 +24,13 @@ armv7a: export SDK=poky-glibc-x86_64-meta-toolchain-armv7a-vfp-toolchain-1.8.2.s
 armv7a: sdk
 armv7a-docker: armv7a
 	docker build . -f ${ABSREPO}/armv7a/Dockerfile --target sdk -t sdk-armv7a
+
+cortexa9: export BRANCH=pyro
+cortexa9: export ARCH=cortexa9
+cortexa9: export SDK=poky-glibc-x86_64-meta-toolchain-cortexa9hf-neon-toolchain-2.3.2.sh
+cortexa9: sdk
+cortexa9-docker: cortexa9
+	docker build . -f ${ABSREPO}/cortexa9/Dockerfile --target sdk -t sdk-cortexa9
 
 armv8: export BRANCH=sumo
 armv8: export ARCH=armv8
@@ -49,6 +56,7 @@ ${_BUILD_SDK}: export BUILDDIR=${ABSDEST}/build
 ${_BUILD_SDK}: poky
 	test -d ${ABSDEST}/build/conf || mkdir -p ${ABSDEST}/build/conf
 	cp -r ${ABSREPO}/${ARCH}/conf/machine ${ABSDEST}/build/conf
+	cp -r ${ABSREPO}/${ARCH}/conf/local.conf ${ABSDEST}/build/conf
 	test -d ${OUTPUT} || mkdir -p ${OUTPUT}
 	. ${POKY}/oe-init-build-env ${ABSDEST}/build ; \
 	test "${SKIP}" == "y" || bitbake meta-toolchain -c populate_sdk

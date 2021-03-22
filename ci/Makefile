@@ -36,6 +36,7 @@ install-build:
 trigger-build:
 	fly -t $(TARGET) trigger-job -j $(PREFIX):sdk-builder/build-sdk-armv8
 	fly -t $(TARGET) trigger-job -j $(PREFIX):sdk-builder/build-sdk-armv7a
+	fly -t $(TARGET) trigger-job -j $(PREFIX):sdk-builder/build-sdk-cortexa9
 
 ## install-release - install the release builder pipeline
 install-release:
@@ -45,6 +46,7 @@ install-release:
 trigger-release:
 	fly -t $(TARGET) trigger-job -j $(PREFIX):agent-release/build-agent-x86
 	fly -t $(TARGET) trigger-job -j $(PREFIX):agent-release/build-agent-armv7a
+	fly -t $(TARGET) trigger-job -j $(PREFIX):agent-release/build-agent-cortexa9
 	fly -t $(TARGET) trigger-job -j $(PREFIX):agent-release/build-agent-armv8
 
 ## lint - spread good cheer.
