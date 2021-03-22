@@ -8,7 +8,8 @@ RUN apt-get update &&\
         bash curl util-linux \
         python-pip python-dev libffi-dev \
         python3 \
-        gcc g++ libc-dev make cmake git libz-dev iptables
+        gcc g++ libc-dev make cmake git libz-dev iptables \
+        inetutils-ping
 
 RUN useradd spire
 
