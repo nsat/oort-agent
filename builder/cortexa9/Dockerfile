@@ -1,4 +1,4 @@
-ARG SDK=poky-glibc-x86_64-meta-toolchain-cortexa9thf-neon-toolchain-1.8.2.sh
+ARG SDK=poky-glibc-x86_64-meta-toolchain-cortexa9hf-neon-toolchain-2.3.2.sh
 ARG ARCH=cortexa9
 
 FROM ubuntu:xenial AS base
