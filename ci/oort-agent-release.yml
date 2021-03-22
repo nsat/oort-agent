@@ -27,6 +27,15 @@ resources:
       access_key_id: ((s3-oort.access_key_id))
       secret_access_key: ((s3-oort.access_key_secret))
       region_name: us-west-2
+  - name: agent-cortexa9
+    type: s3
+    source:
+      bucket: oort-artifacts
+      regexp: cortexa9/install-(.*).tar.gz
+      initial-path: cortexa9/install-0.0.0.tar.gz
+      access_key_id: ((s3-oort.access_key_id))
+      secret_access_key: ((s3-oort.access_key_secret))
+      region_name: us-west-2
   - name: agent-armv8
     type: s3
     source:
@@ -48,6 +57,13 @@ resources:
     type: docker-image
     source:
       repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv7a
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
+
+  - name: sdk-docker-cortexa9
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/cortexa9
       aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
       aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
@@ -124,6 +140,44 @@ jobs:
                 cp repository/installer/install-${build_arch}.tar.gz artifact/install-$VERSION.tar.gz
 
       - put: agent-armv7a
+        params:
+          file: artifact/install-*
+
+  - name: build-agent-cortexa9
+    plan:
+      - get: repository
+        trigger: true
+      - get: dind-base
+        params: {save: true}
+      - get: sdk-docker-cortexa9
+        params: {save: true}
+      - task: build
+        privileged: true
+        image: dind-base
+        params:
+          build_arch: cortexa9
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+            - name: sdk-docker-cortexa9
+              path: sdk
+          outputs:
+            - name: artifact
+          run:
+            path: /bin/bash
+            args:
+              - -xc
+              - |
+                . /docker-lib.sh
+                start_docker
+                docker load -i sdk/image
+                docker image tag `cat sdk/image-id` `cat sdk/repository`:`cat sdk/tag`
+                VERSION=$(cat repository/VERSION)
+                ( cd repository/installer;  make install-${build_arch}.tar.gz )
+                cp repository/installer/install-${build_arch}.tar.gz artifact/install-$VERSION.tar.gz
+
+      - put: agent-cortexa9
         params:
           file: artifact/install-*
 
