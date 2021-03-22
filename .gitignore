@@ -2,6 +2,11 @@
 __pycache__/
 
 build/
+build-cross*/
 dist/
 
 *.swp
+doc/out
+.mypy_cache/
+.vscode/
+agent/gmon.out

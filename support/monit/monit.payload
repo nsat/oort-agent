@@ -1,0 +1,4 @@
+check process payload with pidfile /tmp/payload.pid
+  start = "/sbin/start-stop-daemon -Smb -p /tmp/payload.pid -a /bin/bash -- 
+    -c 'exec /usr/bin/python /payload.py > /tmp/payload.out 2>&1'"
+  depends on oort-agent
