@@ -3,8 +3,8 @@
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
 INSTALLERS=\
-	install-armv7a.zip install-armv8.zip install-x86.zip \
-	install-armv7a.tar.gz install-armv8.tar.gz install-x86.tar.gz 
+	install-armv7a.zip install-armv8.zip install-x86.zip install-cortexa9.zip \
+	install-armv7a.tar.gz install-armv8.tar.gz install-x86.tar.gz install-cortexa9.tar.gz
 
 $(filter %.zip,${INSTALLERS}): install-%.zip: install-%/oort-agent $(call rwildcard,install,*)
 	cp -rp install/* install-$*/
