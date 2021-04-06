@@ -8,7 +8,7 @@ This is the public repository for the OORT Agent.
 ## What is the OORT Agent?
 
 The OORT Agent is a standalone server that is the endpoint of the OORT pipeline.
-It currently provides basic functions to send and recieve files, and to support
+It currently provides basic functions to send and receive files, and to support
 the rest of the pipeline.
 
 The Agent is intended to be an always-available service.  To support this goal,
