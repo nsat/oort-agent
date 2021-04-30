@@ -7,6 +7,8 @@ Currently Supported APIs include:
 
 * [Data Pipeline API](../space-services-user-guide/index.html) - Allows users to send and receive files via ISLs or ground based contacts.
 
+Note: The Spire Linux Agent was formally know as the OORT Agent.  The OORT name is still referenced in SDK modules and process names.
+
 # Components
 
 In addition to the Spire Linux Agent code, Spire provides SDKs to facilitate communication between payload 
