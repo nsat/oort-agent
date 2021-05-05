@@ -73,7 +73,7 @@ On the satellite, the producer will typically perform some observation,
 post-process the recorded data (e.g., to remove duplicate data points or
 run custom compression), and then send the file.
 
-The data pipeline pipeline will use a general-purpose data compressor (e.g., gzip)
+The data pipeline will use a general-purpose data compressor (e.g., gzip)
 to compress data that is not already compressed; so it is not always
 necessary; however a compressor that has been tuned to the specific data
 is likely to perform better.

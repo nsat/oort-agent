@@ -21,4 +21,4 @@ agent = SdkApi()
     apiClient_free(client);
 ```
 
-In this example we will be initializing the SDK object to communicate with the Agent
+In this example we will be initializing the SDK object to communicate with the Spire Linux Agent.

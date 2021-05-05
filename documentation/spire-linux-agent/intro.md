@@ -1,13 +1,13 @@
 # Spire Linux Agent Introduction
 
-The Spire Linux Agent is a daemon that runs on a Space Services customers payload and provides a set of APIs that allow
+The Spire Linux Agent is a daemon that runs on a Space Services customer's payload and provides a set of APIs that allow
 the payload to interface with the rest of the satellite bus.
 
 Currently Supported APIs include:
 
-* [Data Pipeline API](../space-services-user-guide/index.html) - Allows users to send and receive files via ISLs or ground based contacts.
+* [Data Pipeline API](../data-pipeline-docs/index.html) - Allows users to send and receive files via ISLs or ground based contacts.
 
-Note: The Spire Linux Agent was formally know as the OORT Agent.  The OORT name is still referenced in SDK modules and process names.
+Note: The Spire Linux Agent was formerly know as the OORT Agent.  The OORT name is still referenced in SDK modules and process names.
 
 # Components
 
@@ -24,7 +24,7 @@ SDKs
 # How to build the Spire Linux Agent
 
 For Payload in Space customers using Linux payloads, it is expected that the customers compile and install the Spire Linux Agent
-on their payload.  Additionally, the Spire Linux Agent should started automatically upon boot of the payload. 
+on their payload.  Additionally, the Spire Linux Agent should be started automatically upon boot of the payload. 
 
 ```shell
 $ git clone https://github.com/nsat/oort-agent
