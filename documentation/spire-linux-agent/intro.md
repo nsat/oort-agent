@@ -21,6 +21,8 @@ SDKs
 * [Python SDK](https://github.com/nsat/oort-sdk-python)
 * [C SDK](https://github.com/nsat/oort-sdk-c)
 
+Note: Access to the github source code and binaries requires approval by the Spire Space Services sales team.
+
 # How to build the Spire Linux Agent
 
 For Payload in Space customers using Linux payloads, it is expected that the customers compile and install the Spire Linux Agent
