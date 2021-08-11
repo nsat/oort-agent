@@ -10,3 +10,5 @@ doc/out
 .mypy_cache/
 .vscode/
 agent/gmon.out
+
+.DS_Store

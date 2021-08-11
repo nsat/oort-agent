@@ -60,11 +60,23 @@ CMAKE_SRCS= \
 	${SERVER_BASE}/patch/onion.patch \
 	$(EMPTY)
 
+THIRDPARTY_SRCS = \
+	${SERVER_BASE}/thirdparty/libuavcan \
+	${SERVER_BASE}/thirdparty/libuavcan_linux
+
+USSP_SRCS= \
+	${SERVER_BASE}/ussp
+
 OVERLAY_SRCS=$(SERVER_SRCS) $(TEST_SRCS) $(CMAKE_SRCS)
 
 OVERLAY_FILES=$(addprefix ${BUILD}/,$(OVERLAY_SRCS))
+OVERLAY_THIRDPARTY_FILES=$(addprefix ${BUILD}/,$(THIRDPARTY_SRCS))
+OVERLAY_USSP_FILES=$(addprefix ${BUILD}/,$(USSP_SRCS))
+ALL_OVERLAY_FILES=$(OVERLAY_FILES) $(OVERLAY_THIRDPARTY_FILES) $(OVERLAY_USSP_FILES)
 
 DIRS=${BUILD} ${BUILD}/${SERVER_BASE} \
+	${BUILD}/${SERVER_BASE}/thirdparty \
+	${BUILD}/${SERVER_BASE}/ussp \
 	${BUILD}/${SERVER_BASE}/impl \
 	${BUILD}/${SERVER_BASE}/tests \
 	${BUILD}/${SERVER_BASE}/router \
@@ -80,6 +92,8 @@ $(DIRS): ${BUILD}%: | $$(@D)
 	mkdir $@
 
 $(OVERLAY_FILES): | ${BUILD}/oort-collector-api.bpl ${BUILD}/oort-sdk-api.bpl dirs
+$(OVERLAY_THIRDPARTY_FILES): | dirs
+$(OVERLAY_USSP_FILES): | dirs
 
 ${BUILD}/%.bpl: ${SPEC_DIR}/%.yml | dirs
 	docker run --rm \
@@ -101,22 +115,36 @@ ${BUILD}/oort-collector-api: ${BUILD}/oort-collector-api.bpl
 	touch $@
 
 .PHONY: autogen
-autogen: $(BUILD)/oort-sdk-api $(BUILD)/oort-collector-api $(OVERLAY_FILES)
+autogen: $(BUILD)/oort-sdk-api $(BUILD)/oort-collector-api $(ALL_OVERLAY_FILES)
 
 $(OVERLAY_FILES): ${BUILD}/${SERVER_BASE}/%: ${SERVER_BASE}/%
 	cp $< $@
 
-${BUILD}/${SERVER_BASE}/Makefile: $(OVERLAY_FILES) ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api $(addprefix ${BUILD}/,$(CMAKE_SRCS))
+$(OVERLAY_THIRDPARTY_FILES): ${BUILD}/${SERVER_BASE}/thirdparty/%: ${SERVER_BASE}/thirdparty/%
+	cp -r $< $@
+
+$(OVERLAY_USSP_FILES): $(USSP_SRCS)
+	cp -r $(USSP_SRCS) $(OVERLAY_USSP_FILES)
+
+${BUILD}/${SERVER_BASE}/Makefile: $(ALL_OVERLAY_FILES) ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api $(addprefix ${BUILD}/,$(CMAKE_SRCS))
 	cd ${BUILD}/$(SERVER_BASE) && \
 		cmake ${CMAKE_EXTRA} . && \
 		make ONION Catch2 NLOHMANN
 
-${BUILD}/${SERVER_BASE}/api-server: ${BUILD}/${SERVER_BASE}/Makefile $(OVERLAY_FILES) 
+${BUILD}/${SERVER_BASE}/thirdparty/libuavcan/libuavcan/libuavcan.a: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
+	cd ${BUILD}/$(SERVER_BASE) && \
+		$(MAKE) uavcan
+
+${BUILD}/${SERVER_BASE}/dsdlc_generated: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES) ${BUILD}/${SERVER_BASE}/thirdparty/libuavcan/libuavcan/libuavcan.a
+	cd ${BUILD}/$(SERVER_BASE) && \
+		$(MAKE) dsdlc
+
+${BUILD}/${SERVER_BASE}/api-server: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES) ${BUILD}/${SERVER_BASE}/thirdparty/libuavcan/libuavcan/libuavcan.a ${BUILD}/${SERVER_BASE}/dsdlc_generated
 	rm -f $@
 	cd ${BUILD}/$(SERVER_BASE) && \
 		$(MAKE) api-server/fast 
 
-${BUILD}/${SERVER_BASE}/test_agent: ${BUILD}/${SERVER_BASE}/Makefile $(OVERLAY_FILES) 
+${BUILD}/${SERVER_BASE}/test_agent: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 	cd ${BUILD}/$(SERVER_BASE) && \
 		$(MAKE) test_agent/fast 
 
@@ -127,7 +155,7 @@ ${BUILD}/oort-server: ${BUILD}/${SERVER_BASE}/api-server
 ${SERVER_BASE}/impl/version.h:
 	sh mk-version.sh > $@
 
-full: ${BUILD}/${SERVER_BASE}/Makefile $(OVERLAY_FILES) 
+full: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 	cd ${BUILD}/$(SERVER_BASE) && \
 		cmake ${CMAKE_EXTRA} -D${LP_EXTRA} . && \
 		$(MAKE) ${LP_EXTRA}
@@ -159,10 +187,12 @@ clean-objs: dirs
 clean-overlay: dirs
 	rm -f ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api ${BUILD}/*.bpl
 	rm -f $(OVERLAY_FILES)
+	rm -rf $(OVERLAY_THIRDPARTY_FILES)
+	rm -rf $(OVERLAY_USSP_FILES)
 
 clean: clean-cmake clean-objs clean-overlay
 
-cmake: ${BUILD}/${SERVER_BASE}/Makefile $(OVERLAY_FILES) 
+cmake: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 	cd ${BUILD}/$(SERVER_BASE) && \
 		cmake ${CMAKE_EXTRA} . && \
 		make ONION Catch2 NLOHMANN

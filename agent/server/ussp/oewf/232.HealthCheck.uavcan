@@ -1,0 +1,7 @@
+---
+bool need_hard_reset
+uint32 timestamp
+uint32[<256] imetric_feeds
+int32[<256] imetric
+uint32[<256] fmetric_feeds
+float32[<256] fmetric
