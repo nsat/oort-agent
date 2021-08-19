@@ -51,6 +51,8 @@ bool AgentConfig::parseOptions(int argc, char *const argv[]) {
     int opt;
     optind = 1;
     opterr = 0;
+    can_interface_enabled = false;
+    uavcan_node_id = 0;
     while ((opt = getopt(argc, argv, optstring)) != -1) {
         string str_arg;
         if (optarg != NULL) {
@@ -136,6 +138,19 @@ bool AgentConfig::parseOptions(int argc, char *const argv[]) {
                 }
                 use_defaults.loglevel = false;
                 break;
+            case 'c':
+                can_interface = str_arg;
+                can_interface_enabled = true;
+                break;
+            case 'n':
+                try {
+                    uavcan_node_id = stoul(str_arg);
+                }
+                catch (const invalid_argument& e) {
+                    cerr << "Invalid UAVCAN node ID " << str_arg << endl;
+                    return false;
+                }
+                break;
             case '?':
                 // missing argument
                 wantUsage = true;
@@ -148,6 +163,11 @@ bool AgentConfig::parseOptions(int argc, char *const argv[]) {
 
     if (workdir.empty()) {
         cerr << "Workdir must be specified" << endl;
+        return false;
+    }
+
+    if (can_interface_enabled && !uavcan_node_id) {
+        cerr << "If the CAN interface is enabled, a UAVCAN node id must be specified" << endl;
         return false;
     }
 
@@ -178,6 +198,7 @@ void AgentConfig::usage(const char *cmd) {
     cerr << cmd << " -w workdir" << endl;
     cerr << " [-t cleanup-timeout] [-i cleanup-interval] [-f config-file]" << endl;
     cerr << " [-s ident] [-m minfree] [-p port] [-l level]" << endl;
+    cerr << " [-c can-interface] [-n can-node-id]" << endl;
     cerr << " workdir - base working directory; must be writable" << endl;
     cerr << " cleanup-timeout - age in seconds after which files can be deleted" << endl;
     cerr << " cleanup-interval - how frequently in seconds to run the cleanup task" << endl;
@@ -186,6 +207,8 @@ void AgentConfig::usage(const char *cmd) {
     cerr << " minfree - minimum free space to maintain; either ddM or dd%" << endl;
     cerr << " port - tcp port to listen on" << endl;
     cerr << " level - logging level (debug, info, warn, error)" << endl;
+    cerr << " can-interface - CAN interface name for healthcheck interface (e.g. can0)" << endl;
+    cerr << " can-node-id - CAN node ID for healthcheck interface, required if -c is set" << endl;
     cerr << endl;
     cerr << "Defaults: " << endl;
     cerr << " cleanup-timeout = " << defaults.maxage;
@@ -197,4 +220,16 @@ void AgentConfig::usage(const char *cmd) {
 
 int AgentConfig::getPort() {
     return port;
+}
+
+bool AgentConfig::isCANInterfaceEnabled() {
+    return can_interface_enabled;
+}
+
+std::string AgentConfig::getCANInterface() {
+    return can_interface;
+}
+
+unsigned int AgentConfig::getUAVCANNodeID() {
+    return uavcan_node_id;
 }

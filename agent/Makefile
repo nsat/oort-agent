@@ -23,6 +23,8 @@ SERVER_SRCS = \
 	${SERVER_BASE}/impl/version.h \
 	${SERVER_BASE}/impl/Agent.cpp \
 	${SERVER_BASE}/impl/Agent.h \
+	${SERVER_BASE}/impl/AgentUAVCANServer.cpp \
+	${SERVER_BASE}/impl/AgentUAVCANServer.h \
 	${SERVER_BASE}/impl/Cleaner.cpp \
 	${SERVER_BASE}/impl/Cleaner.h \
 	${SERVER_BASE}/impl/Config.cpp \
@@ -45,27 +47,39 @@ SERVER_SRCS = \
 	${SERVER_BASE}/router/SdkApiRouter.cpp \
 	${SERVER_BASE}/router/SdkApiRouter.h \
 	${SERVER_BASE}/router/RouterUtil.h \
-	$(EMPTY)
+	${EMPTY}
 
 TEST_SRCS= \
 	${SERVER_BASE}/main-api-server-test.cpp \
 	${SERVER_BASE}/tests/Utils_test.cpp \
 	${SERVER_BASE}/tests/Log_test.cpp \
 	${SERVER_BASE}/tests/Agent_test.cpp \
-	$(EMPTY)
+	${SERVER_BASE}/tests/Healthcheck_test.cpp \
+	${SERVER_BASE}/tests/utils/hk_error.sh \
+	${SERVER_BASE}/tests/utils/hk_garbage.sh \
+	${SERVER_BASE}/tests/utils/hk_hanging.sh \
+	${SERVER_BASE}/tests/utils/hk_invalid_int_metrics.sh \
+	${SERVER_BASE}/tests/utils/hk_invalid_json.sh \
+	${SERVER_BASE}/tests/utils/hk_long_array.sh \
+	${SERVER_BASE}/tests/utils/hk_long_response.sh \
+	${SERVER_BASE}/tests/utils/hk_success.sh \
+	${SERVER_BASE}/tests/utils/hk_trailing_garbage.sh \
+	${EMPTY}
 
 CMAKE_SRCS= \
 	${SERVER_BASE}/CMakeLists.txt \
 	${SERVER_BASE}/CMakeToolchain.txt \
 	${SERVER_BASE}/patch/onion.patch \
-	$(EMPTY)
+	${EMPTY}
 
 THIRDPARTY_SRCS = \
 	${SERVER_BASE}/thirdparty/libuavcan \
-	${SERVER_BASE}/thirdparty/libuavcan_linux
+	${SERVER_BASE}/thirdparty/libuavcan_linux \
+	${EMPTY}
 
 USSP_SRCS= \
-	${SERVER_BASE}/ussp
+	${SERVER_BASE}/ussp/payload/226.PayloadHealthCheck.uavcan \
+	${EMPTY}
 
 OVERLAY_SRCS=$(SERVER_SRCS) $(TEST_SRCS) $(CMAKE_SRCS)
 
@@ -76,11 +90,17 @@ ALL_OVERLAY_FILES=$(OVERLAY_FILES) $(OVERLAY_THIRDPARTY_FILES) $(OVERLAY_USSP_FI
 
 DIRS=${BUILD} ${BUILD}/${SERVER_BASE} \
 	${BUILD}/${SERVER_BASE}/thirdparty \
-	${BUILD}/${SERVER_BASE}/ussp \
 	${BUILD}/${SERVER_BASE}/impl \
 	${BUILD}/${SERVER_BASE}/tests \
+	${BUILD}/${SERVER_BASE}/tests/utils \
 	${BUILD}/${SERVER_BASE}/router \
 	${BUILD}/${SERVER_BASE}/patch \
+	${BUILD}/${SERVER_BASE}/ussp \
+	${BUILD}/${SERVER_BASE}/ussp/payload \
+	${EMPTY}
+
+UAVCAN_DEPS=${BUILD}/${SERVER_BASE}/thirdparty/libuavcan/libuavcan/libuavcan.a \
+	${BUILD}/${SERVER_BASE}/dsdlc_generated \
 	${EMPTY}
 
 default: ${BUILD}/oort-server
@@ -123,8 +143,8 @@ $(OVERLAY_FILES): ${BUILD}/${SERVER_BASE}/%: ${SERVER_BASE}/%
 $(OVERLAY_THIRDPARTY_FILES): ${BUILD}/${SERVER_BASE}/thirdparty/%: ${SERVER_BASE}/thirdparty/%
 	cp -r $< $@
 
-$(OVERLAY_USSP_FILES): $(USSP_SRCS)
-	cp -r $(USSP_SRCS) $(OVERLAY_USSP_FILES)
+$(OVERLAY_USSP_FILES): ${BUILD}/${SERVER_BASE}/ussp/payload/%: ${SERVER_BASE}/ussp/payload/%
+	cp $< $@
 
 ${BUILD}/${SERVER_BASE}/Makefile: $(ALL_OVERLAY_FILES) ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api $(addprefix ${BUILD}/,$(CMAKE_SRCS))
 	cd ${BUILD}/$(SERVER_BASE) && \
@@ -139,12 +159,12 @@ ${BUILD}/${SERVER_BASE}/dsdlc_generated: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_
 	cd ${BUILD}/$(SERVER_BASE) && \
 		$(MAKE) dsdlc
 
-${BUILD}/${SERVER_BASE}/api-server: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES) ${BUILD}/${SERVER_BASE}/thirdparty/libuavcan/libuavcan/libuavcan.a ${BUILD}/${SERVER_BASE}/dsdlc_generated
+${BUILD}/${SERVER_BASE}/api-server: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES) $(UAVCAN_DEPS)
 	rm -f $@
 	cd ${BUILD}/$(SERVER_BASE) && \
-		$(MAKE) api-server/fast 
+		$(MAKE) api-server/fast
 
-${BUILD}/${SERVER_BASE}/test_agent: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
+${BUILD}/${SERVER_BASE}/test_agent: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES) $(UAVCAN_DEPS)
 	cd ${BUILD}/$(SERVER_BASE) && \
 		$(MAKE) test_agent/fast 
 
@@ -189,6 +209,7 @@ clean-overlay: dirs
 	rm -f $(OVERLAY_FILES)
 	rm -rf $(OVERLAY_THIRDPARTY_FILES)
 	rm -rf $(OVERLAY_USSP_FILES)
+	rm -rf ${BUILD}/${SERVER_BASE}/dsdlc_generated
 
 clean: clean-cmake clean-objs clean-overlay
 

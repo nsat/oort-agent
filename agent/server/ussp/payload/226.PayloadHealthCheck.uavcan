@@ -1,4 +1,7 @@
 ---
+uint8 response_code
+uint8 health_state
+uint32 schema_version
 bool need_hard_reset
 uint32 timestamp
 uint32[<256] imetric_feeds

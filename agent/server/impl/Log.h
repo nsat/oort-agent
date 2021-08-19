@@ -24,6 +24,8 @@ class LogArg : public std::string {
     LogArg(const std::string &s) : std::string(s) {}  // NOLINT(runtime/explicit)
     LogArg(const char *s) : std::string(s) {}  // NOLINT(runtime/explicit)
     LogArg(const int val) : std::string(std::to_string(val)) {}  // NOLINT(runtime/explicit)
+    LogArg(const unsigned int val) :  // NOLINT(runtime/explicit)
+        std::string(std::to_string(val)) {}
     LogArg(const int64_t val) : std::string(std::to_string(val)) {}  // NOLINT(runtime/explicit)
 };
 

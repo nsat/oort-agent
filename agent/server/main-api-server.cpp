@@ -22,6 +22,7 @@
 #include "SdkApiImpl.h"
 #include "Log.h"
 #include "OnionLog.h"
+#include "AgentUAVCANServer.h"
 
 Onion::Onion *server = NULL;
 
@@ -68,6 +69,7 @@ int main(int argc, char * const argv[]) {
     onion_log = agent_onion_log;
 
     AgentConfig config;
+    AgentUAVCANServer *can_server;
 
     if (!config.parseOptions(argc, argv)) {
         config.usage(argv[0]);
@@ -78,6 +80,11 @@ int main(int argc, char * const argv[]) {
 
     Log::info("Workdir = ?",  agent.getWorkdir());
     Log::info("starting up");
+
+    if (config.isCANInterfaceEnabled()) {
+        can_server = new AgentUAVCANServer(config.getCANInterface(), config.getUAVCANNodeID());
+        can_server->start();
+    }
 
     server = new Onion::Onion(O_POLL | O_NO_SIGTERM);
     server->setMaxPostSize(8000);
@@ -96,5 +103,10 @@ int main(int argc, char * const argv[]) {
     Log::info("starting listener on port ?", config.getPort());
     server->listen();
     Log::info("listener stopped");
+
+    if (config.isCANInterfaceEnabled()) {
+        can_server->stop();
+        delete can_server;
+    }
     delete server;
 }

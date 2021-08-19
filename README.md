@@ -67,7 +67,8 @@ give a brief description of the options, reproduced here.
 ```
 oort-agent -w workdir
  [-t cleanup-timeout] [-i cleanup-interval] [-f config-file]
- [-s ident] [-m minfree] [-p port]
+ [-s ident] [-m minfree] [-p port] [-l level]
+ [-c can-interface] [-n can-node-id]
  workdir - base working directory; must be writable
  cleanup-timeout - age in seconds after which files can be deleted
  cleanup-interval - how frequently in seconds to run the cleanup task
@@ -75,11 +76,15 @@ oort-agent -w workdir
  ident - identifier for syslog (default is to log to stderr)
  minfree - minimum free space to maintain; either ddM or dd%
  port - tcp port to listen on
+ level - logging level (debug, info, warn, error)
+ can-interface - CAN interface name for healthcheck interface (e.g. can0)
+ can-node-id - CAN node ID for healthcheck interface, required if -c is set
 
 Defaults: 
  cleanup-timeout = 86400  cleanup-interval = 3600
  minfree = 20%
  port = 2005
+ level = warn
  ```
 
 ## How to install the OORT Agent

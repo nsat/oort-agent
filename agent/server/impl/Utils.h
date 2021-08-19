@@ -68,3 +68,5 @@ bool ends_with(const std::string &str, const std::string &tail);
 std::string chop(const std::string &str, const std::string &tail);
 bool starts_with(const std::string &str, const std::string &head);
 std::string behead(const std::string &str, const std::string &head);
+int runProcessGetOutput(const std::string &cmd, const char *const argv[],
+                        size_t max_output_size, uint32_t timeout_seconds, std::string &output);

@@ -31,6 +31,9 @@ class AgentConfig {
 
     int port;  ///< tcp port to listen on
 
+    std::string can_interface;
+    bool can_interface_enabled;
+    unsigned int uavcan_node_id;
     // options:
     // w - workdir
     // t - timeout
@@ -40,7 +43,9 @@ class AgentConfig {
     // m - min disk free
     // p - port
     // l - loglevel
-    const char *optstring = "w:t:i:f:s:m:p:l:";
+    // c - can interface
+    // n - uavcan node id
+    const char *optstring = "w:t:i:f:s:m:p:l:c:n:";
 
     struct {
         bool minfree = true;
@@ -64,4 +69,7 @@ class AgentConfig {
     bool parseOptions(int argc, char *const argv[]);
     void usage(const char *cmd);
     int getPort();
+    bool isCANInterfaceEnabled();
+    std::string getCANInterface();
+    unsigned int getUAVCANNodeID();
 };

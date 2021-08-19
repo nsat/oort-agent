@@ -75,7 +75,7 @@ add_custom_target(dsdlc ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/libuavcan/libuavc
                   ${CMAKE_CURRENT_SOURCE_DIR}/ussp -I${UAVCAN_DSDL_DEFINITIONS}
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-include_directories("dsdlc_generated") # Adding the default output directory to the include paths
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dsdlc_generated) # Adding the default output directory to the include paths
 
 file(GLOB SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/router/*.cpp
@@ -83,6 +83,9 @@ file(GLOB SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/model/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main-api-server.cpp
 )
+
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/impl/AgentUAVCANServer.cpp PROPERTIES
+    OBJECT_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/dsdlc_generated/ussp/payload/PayloadHealthCheck.hpp)
 
 add_executable(${PROJECT_NAME} ${SRCS} )
 add_dependencies(${PROJECT_NAME} ONION NLOHMANN)
@@ -116,4 +119,6 @@ add_executable(test_agent ${TEST_SRCS})
 ExternalProject_Get_Property(Catch2 source_dir)
 target_include_directories(test_agent PUBLIC ${source_dir}/single_include  ${source_dir}/single_include/catch2)
 add_dependencies(test_agent Catch2 ONION NLOHMANN)
-target_link_libraries(test_agent onioncpp onion pthread z)
+add_dependencies(test_agent dsdlc)
+add_dependencies(test_agent uavcan)
+target_link_libraries(test_agent onioncpp onion pthread z uavcan)
