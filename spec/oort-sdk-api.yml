@@ -9,6 +9,44 @@ info:
 servers:
   - url: http://localhost:2005/sdk/v1
 paths:
+  /adcs:
+    get:
+      tags:
+        - sdk
+      description: query adcs status
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/AdcsResponse"
+
+    post:
+      tags:
+        - sdk
+      description: request adcs operation
+      requestBody:
+        description: The file and parameters for sending
+        required: true
+        content:
+          "application/json":
+            schema:
+              "$ref": "#/components/schemas/AdcsSetRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/AdcsSetResponse"
+        '400':
+          description: ERROR
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/AdcsSetResponse"
+
   /send_file:
     description: Send a file to a destination
     post:
@@ -89,6 +127,57 @@ paths:
 
 components:
   schemas:
+
+    AdcsMode:
+      description: ADCS operation mode
+      type: string
+      enum:
+        - NADIR
+        - TRACK
+        - IDLE
+
+    AdcsResponse:
+      description: ADCS Orientation and status
+      type: object
+      required:
+        - mode
+        - age
+      properties:
+        mode:
+          "$ref": "#/components/schemas/AdcsMode"
+        age:
+          type: integer
+          description: Time in seconds since last live reading from ACDS
+        controller:
+          type: string
+          description: the controlling payload at the time of the last live reading
+        parameter:
+          type: string
+          description: a parameter
+
+    AdcsSetRequest:
+      description: Request to set ADCS mode and parameters
+      type: object
+      required:
+        - mode
+        - parameter
+      properties:
+        mode:
+          "$ref": "#/components/schemas/AdcsMode"
+        parameter:
+          type: string
+
+    AdcsSetResponse:
+      description: Response to set ADCS request
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [OK, FAIL]
+        reason:
+          type: string
 
     TTLParams:
       description: TTL parameters for a sent item

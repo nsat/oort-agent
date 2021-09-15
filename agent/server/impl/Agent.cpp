@@ -294,6 +294,18 @@ ResponseCode<FileInfo> Agent::retrieve_file(
     return resp;
 }
 
+ResponseCode<AdcsResponse> Agent::adcs_get() {
+    ResponseCode<AdcsResponse> resp;
+    resp.code = Code::Bad_Request;
+    return resp;
+}
+
+ResponseCode<AdcsSetResponse> Agent::adcs_set(const AdcsSetRequest &req) {
+    ResponseCode<AdcsSetResponse> resp;
+    resp.code = Code::Bad_Request;
+    return resp;
+}
+
 int64_t Agent::getDiskfree() {
     struct statvfs vfs;
 

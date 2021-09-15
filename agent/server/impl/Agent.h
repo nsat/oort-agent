@@ -17,6 +17,9 @@
 
 #include "Cleaner.h"
 #include "Config.h"
+#include "AdcsResponse.h"
+#include "AdcsSetRequest.h"
+#include "AdcsSetResponse.h"
 #include "AvailableFilesResponse.h"
 #include "FileInfo.h"
 #include "InfoRequest.h"
@@ -105,6 +108,10 @@ class Agent {
     ResponseCode<AvailableFilesResponse> query_available(const std::string &topic);
     ResponseCode<SendFileResponse> send_file(const SendFileRequest &req);
     ResponseCode<FileInfo> retrieve_file(const RetrieveFileRequest &req);
+
+    // SDK ADCS methods
+    ResponseCode<AdcsResponse> adcs_get();
+    ResponseCode<AdcsSetResponse> adcs_set(const AdcsSetRequest &req);
 
     // Collector methods
     ResponseCode<InfoResponse> collector_info(InfoRequest &req);  // model not defined const

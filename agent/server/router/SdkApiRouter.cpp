@@ -42,6 +42,18 @@ SdkApiRouter::SdkApiRouter() {
         this->retrieve_file(rreq, resp);
         return OCS_PROCESSED;
     });
+    this->add("^v1/adcs$", [this](Onion::Request &req, Onion::Response &resp) {
+        if (GetMethod(req) == OR_GET) {
+            this->adcs_get(resp);
+        } else if (GetMethod(req) == OR_POST) {
+            AdcsSetRequest areq;
+            GetPostData(areq, req);
+            this->adcs_post(areq, resp);
+        } else {
+            BadMethod(resp);
+        }
+        return OCS_PROCESSED;
+    });
     this->add("^.*", "Method not implemented", HTTP_NOT_IMPLEMENTED);
 }
 

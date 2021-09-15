@@ -35,3 +35,17 @@ void SdkApiImpl::send_file(
     auto resp = m_agent->send_file(sendFileRequest);
     deliverResponse(response, resp);
 }
+
+void SdkApiImpl::adcs_get(
+    Onion::Response &response
+) {
+    auto resp = m_agent->adcs_get();
+    deliverResponse(response, resp);
+}
+
+void SdkApiImpl::adcs_post(
+    const AdcsSetRequest &adcsSetRequest, Onion::Response &response
+) {
+    auto resp = m_agent->adcs_set(adcsSetRequest);
+    deliverResponse(response, resp);
+}
