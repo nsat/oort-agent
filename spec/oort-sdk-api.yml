@@ -14,6 +14,7 @@ paths:
       tags:
         - sdk
       description: query adcs status
+      operationId: get_adcs
       responses:
         '200':
           description: OK
@@ -26,6 +27,7 @@ paths:
       tags:
         - sdk
       description: request adcs operation
+      operationId: set_adcs
       requestBody:
         description: The file and parameters for sending
         required: true
@@ -136,6 +138,24 @@ components:
         - TRACK
         - IDLE
 
+    Antenna:
+      description: Antenna name to use in ADCS pointing requests
+      type: string
+      maxLength: 24
+
+    AdcsTarget:
+      description: A ground location for the satellite to point at
+      type: object
+      required: [lat, lon]
+      properties:
+        lat:
+          type: number
+          description: latitide in degrees
+        lon:
+          type: number
+          description: longitude in degrees
+
+
     AdcsResponse:
       description: ADCS Orientation and status
       type: object
@@ -160,13 +180,36 @@ components:
       type: object
       required:
         - mode
-        - parameter
       properties:
         mode:
           "$ref": "#/components/schemas/AdcsMode"
-        parameter:
-          type: string
-
+        antenna:
+          "$ref": "#/components/schemas/Antenna"
+        target:
+          "$ref": "#/components/schemas/AdcsTarget"
+      anyOf: 
+        - allOf:
+            - properties:
+                mode: 
+                  enum: [IDLE]
+            - required:
+                - mode
+        - allOf:
+            - properties:
+                mode: 
+                  enum: [NADIR]
+            - required:
+                - mode
+                - antenna
+        - allOf:
+            - properties:
+                mode: 
+                  enum: [TRACK]
+            - required:
+                - mode
+                - antenna
+                - target
+          
     AdcsSetResponse:
       description: Response to set ADCS request
       type: object
