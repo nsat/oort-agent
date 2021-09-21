@@ -234,8 +234,14 @@ int runProcessGetOutput(const string &cmd, const char *const argv[], size_t max_
     sigemptyset(&mask);
     sigaddset(&mask, SIGCHLD);
 
-    if (sigprocmask(SIG_BLOCK, &mask, &orig_mask) < 0) {
-        throw system_error(errno, generic_category(), "sigprocmask");
+    // NB: in normal operation we are in a thread; however in unit test we
+    // are in the main process.  Using sigprocmask here is "unspecified" if
+    // we are in a thread, but if the main thread has its mask set correctly
+    // then we inherit it here.
+    // Thus, for the signal handling to work properly SIGCHLD *must* be 
+    // blocked at startup in the main thread.
+    if (pthread_sigmask(SIG_BLOCK, &mask, &orig_mask) < 0) {
+        throw system_error(errno, generic_category(), "pthread_sigmask");
     }
 
     if (pipe(link) == -1) {
