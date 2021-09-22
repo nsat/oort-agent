@@ -43,8 +43,13 @@ static void sigHandler(int sig) {
     }
 }
 
-static void setUpUnixSignals(std::vector<int> quitSignals) {
+static void setUpUnixSignals(std::vector<int> quitSignals, std::vector<int> blockSignals) {
     sigset_t blocking_mask;
+    sigemptyset(&blocking_mask);
+    for (auto sig : blockSignals)
+        sigaddset(&blocking_mask, sig);
+    sigprocmask(SIG_BLOCK, &blocking_mask, nullptr);
+
     sigemptyset(&blocking_mask);
     for (auto sig : quitSignals)
         sigaddset(&blocking_mask, sig);
@@ -61,8 +66,7 @@ static void setUpUnixSignals(std::vector<int> quitSignals) {
 
 int main(int argc, char * const argv[]) {
 #ifdef __linux__
-    std::vector<int> sigs{SIGQUIT, SIGINT, SIGTERM, SIGHUP};
-    setUpUnixSignals(sigs);
+    setUpUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP}, {SIGCHLD});
 #endif
 
     // set onion library to use our logger
