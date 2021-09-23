@@ -1,0 +1,144 @@
+float64 unix_timestamp
+# unix time (seconds since jan1 1970) of the LEMADCS RTC clock
+#   unit = s
+
+QuatT control_error_q
+### 
+
+QuatT q_bi_est
+# estimated spacecraft attitude quaternion in the intertial coordinate frame
+#   unit = quaternion
+
+QuatT q_bo_est
+# estimated spacecraft attitude quaternion in the orbit (lvlh) coordinate frame
+#   unit = quaternion
+
+QuatT qcf
+# control-frame quaternion (formerly called QBO in API1 and API2)
+#   unit = quaternion
+
+XyzFloatT control_bdot
+# Magnetic Field rate of change estimate used in bdot controller
+#   unit = T/s
+
+XyzFloatT control_error_omega
+### 
+
+XyzFloatT gyro_bias_ekf_gyrovec
+# Estimate of the bias in the gyro currently in use. 
+#   unit = rad/s
+
+XyzFloatT imu1_gyro
+# IMU1 Gyro measurement, includes its bias
+#   unit = rad/s
+
+XyzFloatT imu2_gyro
+# IMU2 Gyro measurement, includes its bias
+#   unit = rad/s
+
+XyzFloatT latlontrack_body_vector
+# body-vector used to point at groud-targets
+#   unit = unitV
+
+XyzFloatT mag_eci
+### 
+
+XyzFloatT mag_vector
+### 
+
+XyzFloatT mtq_dipole_cmd
+### 
+
+XyzFloatT nadir_vector
+# The nadir vector estimated from the NADS
+#   unit = unitV
+
+XyzFloatT omega_bi_est
+# Body rate estimate in inertial frame
+#   unit = rad/s
+
+XyzFloatT omega_bo_est
+# Body rate estimate in orbit frame
+#   unit = rad/s
+
+XyzFloatT sc_r_eci
+### 
+
+XyzFloatT sc_v_eci
+### 
+
+XyzFloatT sun_eci
+# Modeled (Expected) Sun Vector, based on current orbit and time, in the ECI inertial frame. Used to determine current attitude.
+#   unit = unitV
+
+XyzFloatT sun_vector
+# Measured Sun Vector, in body frame. Used to determine current attitude.
+#   unit = unitV
+
+XyzFloatT sunpoint_body_vector
+# Body vector used for sun-pointing operations
+#   unit = unitV
+
+XyzFloatT wheel_torque_cmd_acs
+# Commanded wheel torques, mapped into body frame (positive wheel torque follows right-hand-ruie for axis). The commanded torque value is produced by ADCS control software.
+#   unit = N-m
+
+XyzFloatT wheel_torque_cmd_dre // mapped
+### 
+
+XyzInt16T mtq_duty_cycle
+### 
+
+XyzInt16T wheel_speed_cmd  // mapped
+### 
+
+XyzInt16T wheel_speed
+### 
+
+float32 latlontrack_lat
+# latitude used for ground-target tracking
+#   unit = rad
+
+float32 latlontrack_lon
+# longitude used for ground-target tracking
+#   unit = rad
+
+float32 yawsun
+# the yawsum error used in some nadir-sunpointing operations
+#   unit = rad
+
+uint32 css_used_bitmask
+# bitmask containing the css_used bit flags
+#   unit = --
+
+uint32 lease_time_remaining
+# Time remaining in the current ADCS lease
+#   unit = s
+
+uint32 status_bitmask
+# the raw bitmask, as an int
+#   unit = bitmask
+
+uint8 acs_mode_active
+# Active SPACS Attitude Control Mode as a string.
+# {0: NO-OP, 1: BDOT, 2: DETUMBLE, 3: SUNPOINT, 4: NADIRPOINTYAW, 5: SUNSPIN, 6: NADIRPOINTSUN, 7: SUNPOINTNADIR, 8: LATLONTRACK, 9: INERTIALPOINT}
+#   unit = --
+
+uint8 acs_mode_cmd
+# Commanded SPACS Attitude Control Mode as a string.
+# {0: NO-OP, 1: BDOT, 2: DETUMBLE, 3: SUNPOINT, 4: NADIRPOINTYAW, 5: SUNSPIN, 6: NADIRPOINTSUN, 7: SUNPOINTNADIR, 8: LATLONTRACK, 9: INERTIALPOINT}
+#   unit = --
+
+uint8 ekf_gyro_type
+# Gyro currenty in use, as a string
+#   unit = --
+
+uint8 opmode
+# SPACS Operations Mode STRING. This is independent of the SPACS Attitude Control Mode.
+# 0: CONTROL, 1: OVERRIDE, 2: PANIC
+#   unit = --
+
+uint8 attitude_est_type
+# Type of attitude estimator currently in use, as a string
+#   unit = --
+

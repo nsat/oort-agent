@@ -21,7 +21,7 @@ paths:
           content:
             "application/json":
               schema:
-                "$ref": "#/components/schemas/AdcsResponse"
+                "$ref": "adcs-schema.yml#/components/schemas/AdcsResponse"
 
     post:
       tags:
@@ -34,20 +34,20 @@ paths:
         content:
           "application/json":
             schema:
-              "$ref": "#/components/schemas/AdcsSetRequest"
+              "$ref": "adcs-schema.yml#/components/schemas/AdcsSetRequest"
       responses:
         '200':
           description: OK
           content:
             "application/json":
               schema:
-                "$ref": "#/components/schemas/AdcsSetResponse"
+                "$ref": "adcs-schema.yml#/components/schemas/AdcsSetResponse"
         '400':
           description: ERROR
           content:
             "application/json":
               schema:
-                "$ref": "#/components/schemas/AdcsSetResponse"
+                "$ref": "adcs-schema.yml#/components/schemas/AdcsSetResponse"
 
   /send_file:
     description: Send a file to a destination
@@ -129,99 +129,6 @@ paths:
 
 components:
   schemas:
-
-    AdcsMode:
-      description: ADCS operation mode
-      type: string
-      enum:
-        - NADIR
-        - TRACK
-        - IDLE
-
-    Antenna:
-      description: Antenna name to use in ADCS pointing requests
-      type: string
-      maxLength: 24
-
-    AdcsTarget:
-      description: A ground location for the satellite to point at
-      type: object
-      required: [lat, lon]
-      properties:
-        lat:
-          type: number
-          description: latitide in degrees
-        lon:
-          type: number
-          description: longitude in degrees
-
-
-    AdcsResponse:
-      description: ADCS Orientation and status
-      type: object
-      required:
-        - mode
-        - age
-      properties:
-        mode:
-          "$ref": "#/components/schemas/AdcsMode"
-        age:
-          type: integer
-          description: Time in seconds since last live reading from ACDS
-        controller:
-          type: string
-          description: the controlling payload at the time of the last live reading
-        parameter:
-          type: string
-          description: a parameter
-
-    AdcsSetRequest:
-      description: Request to set ADCS mode and parameters
-      type: object
-      required:
-        - mode
-      properties:
-        mode:
-          "$ref": "#/components/schemas/AdcsMode"
-        antenna:
-          "$ref": "#/components/schemas/Antenna"
-        target:
-          "$ref": "#/components/schemas/AdcsTarget"
-      anyOf: 
-        - allOf:
-            - properties:
-                mode: 
-                  enum: [IDLE]
-            - required:
-                - mode
-        - allOf:
-            - properties:
-                mode: 
-                  enum: [NADIR]
-            - required:
-                - mode
-                - antenna
-        - allOf:
-            - properties:
-                mode: 
-                  enum: [TRACK]
-            - required:
-                - mode
-                - antenna
-                - target
-          
-    AdcsSetResponse:
-      description: Response to set ADCS request
-      type: object
-      required:
-        - status
-      properties:
-        status:
-          type: string
-          enum: [OK, FAIL]
-        reason:
-          type: string
-
     TTLParams:
       description: TTL parameters for a sent item
       properties:
