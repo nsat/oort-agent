@@ -55,6 +55,8 @@ Agent::Agent(const AgentConfig &cfg) : cleaner(this) {
     cleaner.setCleanupInterval(cfg.cleanupInterval);
     cleaner.setMaxAge(cfg.maxAge);
     cleaner.scheduleCleanup();
+
+    uavcan_client = nullptr;
 }
 
 Agent::~Agent() {
@@ -64,6 +66,10 @@ Agent::~Agent() {
 
 Cleaner& Agent::getCleaner() {
     return cleaner;
+}
+
+void Agent::setUavClient(AgentUAVCANClient *client) {
+    uavcan_client = client;
 }
 
 void Agent::create_dirs(const std::vector<string> &dirs) {
@@ -296,7 +302,14 @@ ResponseCode<FileInfo> Agent::retrieve_file(
 
 ResponseCode<AdcsResponse> Agent::adcs_get() {
     ResponseCode<AdcsResponse> resp;
-    resp.code = Code::Bad_Request;
+
+    if (uavcan_client == nullptr) {
+        resp.code = Code::Bad_Request;
+        resp.err.setMessage("Adcs interface is unavailable");
+        return resp;
+    }
+    resp.code = Code::Ok;
+    uavcan_client->AdcsHk(resp.result);
     return resp;
 }
 

@@ -23,6 +23,7 @@
 #include "Log.h"
 #include "OnionLog.h"
 #include "AgentUAVCANServer.h"
+#include "AgentUAVCANClient.h"
 
 Onion::Onion *server = NULL;
 
@@ -74,6 +75,7 @@ int main(int argc, char * const argv[]) {
 
     AgentConfig config;
     AgentUAVCANServer *can_server;
+    AgentUAVCANClient *can_client;
 
     if (!config.parseOptions(argc, argv)) {
         config.usage(argv[0]);
@@ -88,6 +90,9 @@ int main(int argc, char * const argv[]) {
     if (config.isCANInterfaceEnabled()) {
         can_server = new AgentUAVCANServer(config.getCANInterface(), config.getUAVCANNodeID());
         can_server->start();
+
+        can_client = new AgentUAVCANClient(config.getCANInterface(), config.getUAVCANNodeID());
+        agent.setUavClient(can_client);
     }
 
     server = new Onion::Onion(O_POLL | O_NO_SIGTERM);

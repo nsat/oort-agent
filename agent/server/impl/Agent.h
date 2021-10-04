@@ -15,6 +15,7 @@
 #include <vector>
 #include <regex>  // NOLINT(build/c++11)
 
+#include "AgentUAVCANClient.h"
 #include "Cleaner.h"
 #include "Config.h"
 #include "AdcsResponse.h"
@@ -34,6 +35,8 @@
 class Agent {
     Cleaner cleaner;
     friend class Cleaner;
+
+    AgentUAVCANClient *uavcan_client;
 
     const std::string META_EXT = ".meta.oort";
     const std::string DATA_EXT = ".data.oort";
@@ -94,6 +97,8 @@ class Agent {
     ~Agent();
 
     Cleaner& getCleaner();
+
+    void setUavClient(AgentUAVCANClient *client);
 
     void setMinFreeMb(int mb);
     void setMinFreePct(int pct);

@@ -1,3 +1,4 @@
+---
 float64 unix_timestamp
 # unix time (seconds since jan1 1970) of the LEMADCS RTC clock
 #   unit = s
@@ -83,13 +84,13 @@ XyzFloatT wheel_torque_cmd_acs
 # Commanded wheel torques, mapped into body frame (positive wheel torque follows right-hand-ruie for axis). The commanded torque value is produced by ADCS control software.
 #   unit = N-m
 
-XyzFloatT wheel_torque_cmd_dre // mapped
+XyzFloatT wheel_torque_cmd_dre
 ### 
 
 XyzInt16T mtq_duty_cycle
 ### 
 
-XyzInt16T wheel_speed_cmd  // mapped
+XyzInt16T wheel_speed_cmd
 ### 
 
 XyzInt16T wheel_speed

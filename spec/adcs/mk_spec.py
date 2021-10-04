@@ -12,8 +12,8 @@ oapi_types = {
     'float': 'type: number',
     'double': 'type: number',
     'xyz_float_t': '"$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_float_t"',
-    'xyz_int16_t': '"$ref": adcs-schema.yml"#/components/schemas/Adcs_xyz_int16_t"',
-    'quat_t': '"$ref": adcs-schema.yml"#/components/schemas/Adcs_quat_t"',
+    'xyz_int16_t': '"$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_int16_t"',
+    'quat_t': '"$ref": "adcs-schema.yml#/components/schemas/Adcs_quat_t"',
 }
 dsdl_types = {
     'uint8_t': 'uint8',

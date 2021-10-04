@@ -23,6 +23,8 @@ SERVER_SRCS = \
 	${SERVER_BASE}/impl/version.h \
 	${SERVER_BASE}/impl/Agent.cpp \
 	${SERVER_BASE}/impl/Agent.h \
+	${SERVER_BASE}/impl/AgentUAVCANClient.cpp \
+	${SERVER_BASE}/impl/AgentUAVCANClient.h \
 	${SERVER_BASE}/impl/AgentUAVCANServer.cpp \
 	${SERVER_BASE}/impl/AgentUAVCANServer.h \
 	${SERVER_BASE}/impl/Cleaner.cpp \
@@ -79,6 +81,12 @@ THIRDPARTY_SRCS = \
 
 USSP_SRCS= \
 	${SERVER_BASE}/ussp/payload/226.PayloadHealthCheck.uavcan \
+	${SERVER_BASE}/ussp/payload/227.PayloadAdcsHk.uavcan \
+	${SERVER_BASE}/ussp/payload/228.PayloadAdcsSet.uavcan \
+	$(SERVER_BASE)/ussp/payload/TargetT.uavcan \
+	$(SERVER_BASE)/ussp/payload/QuatT.uavcan \
+	$(SERVER_BASE)/ussp/payload/XyzFloatT.uavcan \
+	$(SERVER_BASE)/ussp/payload/XyzInt16T.uavcan \
 	${EMPTY}
 
 OVERLAY_SRCS=$(SERVER_SRCS) $(TEST_SRCS) $(CMAKE_SRCS)
@@ -127,6 +135,8 @@ ${BUILD}/%.bpl: ${SPEC_DIR}/%.yml | dirs
 		--config $(SPEC_DIR)/oapi-config.yaml
 	@touch -c -d@0 $(OVERLAY_FILES)
 	touch $@
+
+${BUILD}/oort-sdk-api.bpl: ${SPEC_DIR}/adcs-schema.yml ${SPEC_DIR}/adcs-hk.yml
 
 ${BUILD}/oort-sdk-api: ${BUILD}/oort-sdk-api.bpl 
 	touch $@ 
@@ -189,6 +199,9 @@ unittest: ${BUILD}/${SERVER_BASE}/test_agent
 
 run: ${BUILD}/oort-server
 	${BUILD}/oort-server -w /tmp/workdir.1
+
+runcan: ${BUILD}/oort-server
+	${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12
 
 server: ${BUILD}/oort-server
 

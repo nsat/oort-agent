@@ -11,6 +11,7 @@ components:
     Adcs_xyz_int16_t:
       description: ADCS int x,y,z type
       type: object
+      required: [x, y, z]
       properties:
         x:
           type: number
@@ -22,6 +23,7 @@ components:
     Adcs_xyz_float_t:
       description: ADCS float x,y,z type
       type: object
+      required: [x, y, z]
       properties:
         x:
           type: number
@@ -33,28 +35,35 @@ components:
     Adcs_quat_t:
       description: ADCS QBO type
       type: object
+      required: [q1, q2, q3, q4]
       properties:
-        x:
+        q1:
           type: number
-        y:
+        q2:
           type: number
-        z:
+        q3:
+          type: number
+        q4:
           type: number
 
     AdcsMode:
       description: SPACS attitude control mode
-      type: string
-      enum:
-        - NO-OP
-        - BDOT
-        - DETUMBLE
-        - SUNPOINT
-        - NADIRPOINTYAW
-        - SUNSPIN
-        - NADIRPOINTSUN
-        - SUNPOINTNADIR
-        - LATLONTRACK
-        - INERTIALPOINT
+      required: [mode]
+      properties:
+        mode:
+          type: string
+          maxLength: 14
+          enum:
+            - NO-OP
+            - BDOT
+            - DETUMBLE
+            - SUNPOINT
+            - NADIRPOINTYAW
+            - SUNSPIN
+            - NADIRPOINTSUN
+            - SUNPOINTNADIR
+            - LATLONTRACK
+            - INERTIALPOINT
 
     Antenna:
       description: Antenna name to use in ADCS pointing requests
@@ -81,6 +90,7 @@ components:
         - age
       properties:
         mode:
+          type: string
           "$ref": "#/components/schemas/AdcsMode"
         age:
           type: integer
