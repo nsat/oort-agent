@@ -315,7 +315,14 @@ ResponseCode<AdcsResponse> Agent::adcs_get() {
 
 ResponseCode<AdcsSetResponse> Agent::adcs_set(const AdcsSetRequest &req) {
     ResponseCode<AdcsSetResponse> resp;
-    resp.code = Code::Bad_Request;
+
+    if (uavcan_client == nullptr) {
+        resp.code = Code::Bad_Request;
+        resp.err.setMessage("Adcs interface is unavailable");
+        return resp;
+    }
+    resp.code = Code::Ok;
+    uavcan_client->AdcsSet(req, resp.result);
     return resp;
 }
 

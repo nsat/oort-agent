@@ -1,0 +1,17 @@
+uint8[14] adcs_mode
+# string specifying adcs mode
+
+uint8[25] antenna
+# string name of the antenna to center the operation on
+
+TargetT target
+# target for adcs to point at
+# not applicable to every mode
+---
+uint8 status
+# status of request
+# 0 = OK
+# 1 = FAIL
+
+uint8[<255] reason
+# reason for failure
