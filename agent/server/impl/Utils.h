@@ -8,6 +8,7 @@
 #pragma once
 
 #include <string>
+#include <semaphore.h>
 
 #include "onion/onion.hpp"
 #include "onion/response.hpp"
@@ -56,6 +57,21 @@ onion_connection_status deliverResponse(Onion::Response &rstream, ResponseCode<T
     }
     return OCS_PROCESSED;
 }
+
+// simple semaphore wrapper
+class BinSemaphore {
+    sem_t sem;
+  public:
+    BinSemaphore() { 
+        if (sem_init(&sem, 0, 1) != 0) {
+            throw system_error(errno, generic_category(), "initializing semaphore");
+        }
+    }
+    ~BinSemaphore() { sem_destroy(&sem); }
+    int wait() { return sem_wait(&sem); }
+    int timedwait(const timespec& abs_timeout) { return sem_timedwait(&sem, &abs_timeout); }
+    int post() { return sem_post(&sem); }
+};
 
 std::string mkUUID();
 std::string OSError(const std::string &prefix = "");
