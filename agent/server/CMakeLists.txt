@@ -54,7 +54,10 @@ ExternalProject_Add(NLOHMANN
         -DJSON_BuildTests=off
 )
 
+set(PreviousBuildType ${CMAKE_BUILD_TYPE})
+set(CMAKE_BUILD_TYPE Release)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/libuavcan)
+set(CMAKE_BUILD_TYPE ${PreviousBuildType})
 
 include_directories(${EXTERNAL_INSTALL_LOCATION}/include)
 link_directories(${EXTERNAL_INSTALL_LOCATION}/lib)
