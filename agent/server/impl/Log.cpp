@@ -7,6 +7,7 @@
  */
 
 #include "Log.h"
+#include "Utils.h"
 #include <syslog.h>
 #include <time.h>
 #include <iostream>
@@ -26,6 +27,7 @@ namespace {
     string *l_timefmt = NULL;
     bool using_syslog = false;
     string l_ident;
+    BinSemaphore l_sem;
 
     string fmttime() {
         if (!l_timefmt) {
@@ -64,11 +66,13 @@ namespace {
             }
             s_out << msg.substr(mstart);
 
+            l_sem.wait();
             if (using_syslog) {
                 syslog(Log::syslogLevels[level], "%s", s_out.str().c_str());
             } else {
                 *l_out << s_out.str() << endl;
             }
+            l_sem.post();
         }
     }
 }  // namespace
