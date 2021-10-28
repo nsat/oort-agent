@@ -21,6 +21,8 @@ endif
 
 SERVER_SRCS = \
 	${SERVER_BASE}/impl/version.h \
+	${SERVER_BASE}/impl/Adcs.cpp \
+	${SERVER_BASE}/impl/Adcs.h \
 	${SERVER_BASE}/impl/Agent.cpp \
 	${SERVER_BASE}/impl/Agent.h \
 	${SERVER_BASE}/impl/AgentUAVCANClient.cpp \
@@ -80,9 +82,11 @@ THIRDPARTY_SRCS = \
 	${EMPTY}
 
 USSP_SRCS= \
+	${SERVER_BASE}/ussp/tfrs/223.ReceiverNavigationState.uavcan \
+	${SERVER_BASE}/ussp/payload/224.PayloadAdcsCommand.uavcan \
 	${SERVER_BASE}/ussp/payload/226.PayloadHealthCheck.uavcan \
-	${SERVER_BASE}/ussp/payload/227.PayloadAdcsHk.uavcan \
-	${SERVER_BASE}/ussp/payload/228.PayloadAdcsSet.uavcan \
+	${SERVER_BASE}/ussp/payload/233.PayloadAdcsFeed.uavcan \
+	$(SERVER_BASE)/ussp/payload/AcsMode.uavcan \
 	$(SERVER_BASE)/ussp/payload/TargetT.uavcan \
 	$(SERVER_BASE)/ussp/payload/QuatT.uavcan \
 	$(SERVER_BASE)/ussp/payload/XyzFloatT.uavcan \
@@ -105,6 +109,7 @@ DIRS=${BUILD} ${BUILD}/${SERVER_BASE} \
 	${BUILD}/${SERVER_BASE}/patch \
 	${BUILD}/${SERVER_BASE}/ussp \
 	${BUILD}/${SERVER_BASE}/ussp/payload \
+	${BUILD}/${SERVER_BASE}/ussp/tfrs \
 	${EMPTY}
 
 UAVCAN_DEPS=${BUILD}/${SERVER_BASE}/thirdparty/libuavcan/libuavcan/libuavcan.a \
@@ -153,7 +158,7 @@ $(OVERLAY_FILES): ${BUILD}/${SERVER_BASE}/%: ${SERVER_BASE}/%
 $(OVERLAY_THIRDPARTY_FILES): ${BUILD}/${SERVER_BASE}/thirdparty/%: ${SERVER_BASE}/thirdparty/%
 	cp -r $< $@
 
-$(OVERLAY_USSP_FILES): ${BUILD}/${SERVER_BASE}/ussp/payload/%: ${SERVER_BASE}/ussp/payload/%
+$(OVERLAY_USSP_FILES): ${BUILD}/${SERVER_BASE}/ussp/%: ${SERVER_BASE}/ussp/%
 	cp $< $@
 
 ${BUILD}/${SERVER_BASE}/Makefile: $(ALL_OVERLAY_FILES) ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api $(addprefix ${BUILD}/,$(CMAKE_SRCS))
@@ -202,6 +207,12 @@ run: ${BUILD}/oort-server
 
 runcan: ${BUILD}/oort-server
 	${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12
+
+gdb-runcan: ${BUILD}/oort-server
+	gdb --args ${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12
+
+vg-runcan: ${BUILD}/oort-server
+	valgrind --tool=memcheck --show-leak-kinds=all --leak-check=full ${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12
 
 server: ${BUILD}/oort-server
 
