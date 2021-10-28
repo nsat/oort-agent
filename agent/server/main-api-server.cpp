@@ -28,7 +28,7 @@
 
 static const char VERSION[] = "@(#) Release: " RELEASE_VERSION " Build: " BUILD_VERSION;
 
-Onion::Onion *server = NULL;
+Onion::Onion *server = nullptr;
 
 #ifdef __linux__
 static void sigHandler(int sig) {
@@ -39,7 +39,7 @@ static void sigHandler(int sig) {
         case SIGHUP:
         default:
             Log::warn("shutting down on signal");
-            if (server != NULL) {
+            if (server != nullptr) {
                 Log::warn("stopping listener");
                 server->listenStop();
             }
@@ -77,8 +77,8 @@ int main(int argc, char * const argv[]) {
     onion_log = agent_onion_log;
 
     AgentConfig config;
-    AgentUAVCANServer *can_server;
-    AgentUAVCANClient *can_client;
+    AgentUAVCANServer *can_server = nullptr;
+    AgentUAVCANClient *can_client = nullptr;
 
     if (!config.parseOptions(argc, argv)) {
         config.usage(argv[0]);
