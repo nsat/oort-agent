@@ -24,6 +24,9 @@
 #include "OnionLog.h"
 #include "AgentUAVCANServer.h"
 #include "AgentUAVCANClient.h"
+#include "version.h"
+
+static const char VERSION[] = "@(#) Release: " RELEASE_VERSION " Build: " BUILD_VERSION;
 
 Onion::Onion *server = NULL;
 
