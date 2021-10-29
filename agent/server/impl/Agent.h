@@ -18,6 +18,7 @@
 #include "AgentUAVCANClient.h"
 #include "Cleaner.h"
 #include "Config.h"
+#include "Adcs.h"
 #include "AdcsResponse.h"
 #include "AdcsSetRequest.h"
 #include "AdcsSetResponse.h"
@@ -29,6 +30,7 @@
 #include "SendFileRequest.h"
 #include "SendFileResponse.h"
 #include "SystemInfo.h"
+#include "TfrsResponse.h"
 #include "TransferMeta.h"
 #include "Utils.h"
 
@@ -37,6 +39,7 @@ class Agent {
     friend class Cleaner;
 
     AgentUAVCANClient *uavcan_client;
+    AdcsManager *adcs = nullptr;
 
     const std::string META_EXT = ".meta.oort";
     const std::string DATA_EXT = ".data.oort";
@@ -99,6 +102,7 @@ class Agent {
     Cleaner& getCleaner();
 
     void setUavClient(AgentUAVCANClient *client);
+    void setAdcsMgr(AdcsManager *mgr) {adcs = mgr;}
 
     void setMinFreeMb(int mb);
     void setMinFreePct(int pct);
@@ -117,6 +121,9 @@ class Agent {
     // SDK ADCS methods
     ResponseCode<AdcsResponse> adcs_get();
     ResponseCode<AdcsSetResponse> adcs_set(const AdcsSetRequest &req);
+
+    // SDK TFRS methods
+    ResponseCode<TfrsResponse> tfrs_get();
 
     // Collector methods
     ResponseCode<InfoResponse> collector_info(InfoRequest &req);  // model not defined const

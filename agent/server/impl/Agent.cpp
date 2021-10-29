@@ -303,13 +303,13 @@ ResponseCode<FileInfo> Agent::retrieve_file(
 ResponseCode<AdcsResponse> Agent::adcs_get() {
     ResponseCode<AdcsResponse> resp;
 
-    if (uavcan_client == nullptr) {
+    if (adcs == nullptr) {
         resp.code = Code::Bad_Request;
         resp.err.setMessage("Adcs interface is unavailable");
         return resp;
     }
     resp.code = Code::Ok;
-    uavcan_client->AdcsHk(resp.result);
+    resp.result = adcs->getAdcs();
     return resp;
 }
 
@@ -323,6 +323,19 @@ ResponseCode<AdcsSetResponse> Agent::adcs_set(const AdcsSetRequest &req) {
     }
     resp.code = Code::Ok;
     uavcan_client->AdcsSet(req, resp.result);
+    return resp;
+}
+
+ResponseCode<TfrsResponse> Agent::tfrs_get() {
+    ResponseCode<TfrsResponse> resp;
+
+    if (adcs == nullptr) {
+        resp.code = Code::Bad_Request;
+        resp.err.setMessage("Tfrs interface is unavailable");
+        return resp;
+    }
+    resp.code = Code::Ok;
+    resp.result = adcs->getTfrs();
     return resp;
 }
 
