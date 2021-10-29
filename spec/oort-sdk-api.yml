@@ -9,6 +9,19 @@ info:
 servers:
   - url: http://localhost:2005/sdk/v1
 paths:
+  /tfrs:
+    get:
+      tags:
+        - sdk
+      description: get tfrs values
+      operationId: get_tfrs
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "adcs-schema.yml#/components/schemas/TfrsResponse"
   /adcs:
     get:
       tags:
