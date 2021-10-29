@@ -10,8 +10,7 @@
 #include <string>
 
 #include <uavcan_linux/uavcan_linux.hpp>
-#include <ussp/payload/PayloadAdcsHk.hpp>
-#include <ussp/payload/PayloadAdcsSet.hpp>
+#include <ussp/payload/PayloadAdcsCommand.hpp>
 #include "AdcsResponse.h"
 #include "AdcsSetRequest.h"
 #include "AdcsSetResponse.h"
@@ -31,13 +30,11 @@ class AgentUAVCANClient {
     uavcan_linux::NodePtr node;
 
     void initNode();
-    uavcan_linux::BlockingServiceClientPtr<ussp::payload::PayloadAdcsHk> adcshk_client;
-    uavcan_linux::BlockingServiceClientPtr<ussp::payload::PayloadAdcsSet> adcsset_client;
+    uavcan_linux::BlockingServiceClientPtr<ussp::payload::PayloadAdcsCommand> adcsset_client;
 
  public:
     AgentUAVCANClient(std::string iface, unsigned int node_id);
 
-    void AdcsHk(org::openapitools::server::model::AdcsResponse& rsp);
     void AdcsSet(const org::openapitools::server::model::AdcsSetRequest& req,
                  org::openapitools::server::model::AdcsSetResponse& rsp);
 };
