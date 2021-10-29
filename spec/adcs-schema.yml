@@ -32,6 +32,18 @@ components:
         z:
           type: number
 
+    Adcs_euler_t:
+      description: ADCS Euler angles -- roll, pitch, yaw
+      type: object
+      required: [roll, pitch, yaw]
+      properties:
+        roll:
+          type: number
+        pitch:
+          type: number
+        yaw:
+          type: number
+
     Adcs_quat_t:
       description: ADCS QBO type
       type: object
@@ -147,3 +159,35 @@ components:
           enum: [OK, FAIL]
         reason:
           type: string
+
+    TfrsResponse:
+      description: TFRS time and position
+      type: object
+      required: [age, utc_time,
+                 ecef_pos_x, ecef_pos_y, ecef_pos_z,
+                 ecef_vel_x, ecef_vel_y, ecef_vel_z]
+      properties:
+        age:
+          type: number
+          description: age of the cached value
+        utc_time:
+          type: integer
+          description: unix epoch time
+        ecef_pos_x:
+          type: number
+          description: ECEF X position
+        ecef_pos_y:
+          type: number
+          description: ECEF Y position
+        ecef_pos_z:
+          type: number
+          description: ECEF Z position
+        ecef_vel_x:
+          type: number
+          description: ECEF X velocity
+        ecef_vel_y:
+          type: number
+          description: ECEF Y velocity
+        ecef_vel_z:
+          type: number
+          description: ECEF Z velocity
