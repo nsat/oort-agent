@@ -1,0 +1,134 @@
+
+openapi: '3.0.3'
+info: 
+  title: ADCS data structures
+  version: '1.0'
+
+components:
+  schemas:
+
+    AdcsHk:
+      description: ADCS hk response
+      type: object
+      properties:
+
+        control_error_angle_deg:
+          type: number
+          description: >
+            Absolute control error angle
+
+        acs_mode_active:
+          type: string
+          description: >
+            Active ADCS mode
+
+        euler_angles:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_euler_t"
+          description: >
+            Current attitude in the LVLH (orbit) fram in degrees for Roll, Pitch, Yaw
+
+        control_error_q:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_quat_t"
+          description: >
+            Feedback on quaternion error
+
+        lat_deg:
+          type: number
+          description: >
+            Subsatellite latitude, in degrees
+
+        q_bo_est:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_quat_t"
+          description: >
+            estimated spacecraft attitude quaternion in the orbit (lvlh) frame
+
+        latlontrack_lat:
+          type: number
+          description: >
+            latitude used for ground target tracking
+
+        lease_active:
+          type: integer
+          description: >
+            Flag if a lease is currently active
+
+        lon_deg:
+          type: number
+          description: >
+            Subsatellite longitude, in degrees
+
+        eclipse_flag:
+          type: integer
+          description: >
+            Sunlit/eclipse status of spacecraft
+
+        q_bi_est:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_quat_t"
+          description: >
+            estimated spacecraft attitude quaternion in the inertial coordinate frame
+
+        latlontrack_lon:
+          type: number
+          description: >
+            longitude used for ground target tracking
+
+        r_eci:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_float_t"
+          description: >
+            estimated spacecraft position in ECI frame
+
+        altitude:
+          type: number
+          description: >
+            Estimated altitude of satellite in meters
+
+        latlontrack_body_vector:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_float_t"
+          description: >
+            body vector used to point at ground targets
+
+        omega_bo_est:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_float_t"
+          description: >
+            Body rate estimate in orbit frame
+
+        acs_mode_cmd:
+          type: string
+          description: >
+            Commanded ADCS mode
+
+        v_eci:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_float_t"
+          description: >
+            estimated spacecraft velocity in ECI frame
+
+        qcf:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_quat_t"
+          description: >
+            control frame quaternion
+
+        lease_time_remaining:
+          type: integer
+          description: >
+            time remaining in current ADCS lease
+
+        unix_timestamp:
+          type: number
+          description: >
+            Unix epoch time
+
+        omega_bi_est:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_float_t"
+          description: >
+            Body rate estimate in inertial frame
+
+        control_error_omega:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_float_t"
+          description: >
+            Feedback on rate error
+
+        r_ecef:
+          "$ref": "adcs-schema.yml#/components/schemas/Adcs_xyz_float_t"
+          description: >
+            estimated spacecraft position in ECEF frame
+
