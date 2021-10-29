@@ -1,3 +1,11 @@
+default: _default
+.PHONY: help
+## Available targets
+help:
+	@echo
+	@sed -n -e 's/^## //p' Makefile
+	@exit 1
+
 .PHONY: test lint
 # recursive wildcard function
 # from https://stackoverflow.com/a/18258352/796950
@@ -103,7 +111,8 @@ UAVCAN_DEPS=${BUILD}/${SERVER_BASE}/thirdparty/libuavcan/libuavcan/libuavcan.a \
 	${BUILD}/${SERVER_BASE}/dsdlc_generated \
 	${EMPTY}
 
-default: ${BUILD}/oort-server
+## default - build oort-server in build subdir
+_default: ${BUILD}/oort-server
 
 dirs: ${DIRS}
 
@@ -135,6 +144,7 @@ ${BUILD}/oort-collector-api: ${BUILD}/oort-collector-api.bpl
 	touch $@
 
 .PHONY: autogen
+## autogen - regenerate all the automatically generated files
 autogen: $(BUILD)/oort-sdk-api $(BUILD)/oort-collector-api $(ALL_OVERLAY_FILES)
 
 $(OVERLAY_FILES): ${BUILD}/${SERVER_BASE}/%: ${SERVER_BASE}/%
@@ -175,35 +185,45 @@ ${BUILD}/oort-server: ${BUILD}/${SERVER_BASE}/api-server
 ${SERVER_BASE}/impl/version.h:
 	sh mk-version.sh > $@
 
+## full - build everything
 full: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 	cd ${BUILD}/$(SERVER_BASE) && \
 		cmake ${CMAKE_EXTRA} -D${LP_EXTRA} . && \
 		$(MAKE) ${LP_EXTRA}
 	cp ${BUILD}/${SERVER_BASE}/api-server ${BUILD}/oort-server
 
+## test - run unit tests
 test: ${BUILD}/oort-server
 	bash tests/test-api-server.sh
 
 unittest: ${BUILD}/${SERVER_BASE}/test_agent
 	${BUILD}/${SERVER_BASE}/test_agent
 
+## run - start up oort-server locally
 run: ${BUILD}/oort-server
-	${BUILD}/oort-server -w /tmp/workdir.1
+	mkdir /tmp/workdir.1 || true
+	${BUILD}/oort-server -l debug -w /tmp/workdir.1
 
+## server - build oort-server 
 server: ${BUILD}/oort-server
 
+## lint - run cpplint against server sources
 lint:
 	cpplint $(SERVER_SRCS)
 
 .PHONY: clean-cmake clean-objs clean-overlay clean
+## clean-cmake - remove cmake generated files
 clean-cmake: 
 	cd ${BUILD} && \
 	find . -name CMakeFiles -o -name CMakeCache.txt |xargs rm -rf
 
+## clean-objs - remove object files
 clean-objs: dirs
 	cd ${BUILD} && \
 	find . -name *.[ao] -o -name '*.so.*' -o -name '*.so' |xargs rm -rf
 
+## clean-overlay - remove overlay files (files that are explicitly replacing
+##   automatically generated ones)
 clean-overlay: dirs
 	rm -f ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api ${BUILD}/*.bpl
 	rm -f $(OVERLAY_FILES)
@@ -211,8 +231,10 @@ clean-overlay: dirs
 	rm -rf $(OVERLAY_USSP_FILES)
 	rm -rf ${BUILD}/${SERVER_BASE}/dsdlc_generated
 
+## clean - clean all the things
 clean: clean-cmake clean-objs clean-overlay
 
+## cmake - run cmake commands and build exernal dependencies
 cmake: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 	cd ${BUILD}/$(SERVER_BASE) && \
 		cmake ${CMAKE_EXTRA} . && \
@@ -223,6 +245,7 @@ cmake: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 BUILD_DOCKER_BASE = 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/
 # BUILD_DOCKER_BASE = sdk-
 
+## cross - run the build for a cross-compiler, using the cross-compiler builder docker
 cross:
 	$(MAKE) BUILD=build-cross-${ARCH} autogen
 	docker run --rm \
