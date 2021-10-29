@@ -1,1 +1,12 @@
 uint8 mode
+
+uint8 NOOP = 0
+uint8 BDOT = 1
+uint8 DETUMBLE = 2
+uint8 SUNPOINT = 3
+uint8 NADIRPOINTYAW = 4
+uint8 SUNSPIN = 5
+uint8 NADIRPOINTSUN = 6
+uint8 SUNPOINTNADIR = 7
+uint8 LATLONTRACK = 8
+uint8 INERTIALPOINT = 9

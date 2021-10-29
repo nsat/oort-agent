@@ -37,18 +37,19 @@ Adapt(ussp::payload::XyzFloatT_<0> src) {
 
 static string
 Adapt(ussp::payload::AcsMode src) {
+    using ussp::payload::AcsMode ;
     switch (src.mode) {
-        case 0: return "NO-OP"; break;
-        case 1: return "BDOT"; break;
-        case 2: return "DETUMBLE"; break;
-        case 3: return "SUNPOINT"; break;
-        case 4: return "NADIRPOINTYAW"; break;
-        case 5: return "SUNSPIN"; break;
-        case 6: return "NADIRPOINTSUN"; break;
-        case 7: return "SUNPOINTNADIR"; break;
-        case 8: return "LATLONTRACK"; break;
-        case 9: return "INERTIALPOINT"; break;
-        default: return "UNKNOWN";
+        case AcsMode::NOOP:          return "NO-OP"; break;
+        case AcsMode::BDOT:          return "BDOT"; break;
+        case AcsMode::DETUMBLE:      return "DETUMBLE"; break;
+        case AcsMode::SUNPOINT:      return "SUNPOINT"; break;
+        case AcsMode::NADIRPOINTYAW: return "NADIRPOINTYAW"; break;
+        case AcsMode::SUNSPIN:       return "SUNSPIN"; break;
+        case AcsMode::NADIRPOINTSUN: return "NADIRPOINTSUN"; break;
+        case AcsMode::SUNPOINTNADIR: return "SUNPOINTNADIR"; break;
+        case AcsMode::LATLONTRACK:   return "LATLONTRACK"; break;
+        case AcsMode::INERTIALPOINT: return "INERTIALPOINT"; break;
+        default:                     return "UNKNOWN";
     }
 }
 
