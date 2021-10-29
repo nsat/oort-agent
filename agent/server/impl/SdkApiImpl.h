@@ -23,6 +23,8 @@
 #include "AdcsSetRequest.h"
 #include "AdcsSetResponse.h"
 
+#include "TfrsResponse.h"
+
 #include "Agent.h"
 #include "Utils.h"
 
@@ -43,6 +45,8 @@ class SdkApiImpl : public SdkApiRouter {
         Onion::Response &response);
     void adcs_post(
         const AdcsSetRequest &adcsSetRequest, Onion::Response &response);
+    void tfrs_get(
+        Onion::Response &response);
 
  private:
     Agent *m_agent;

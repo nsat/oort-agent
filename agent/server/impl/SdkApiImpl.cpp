@@ -49,3 +49,10 @@ void SdkApiImpl::adcs_post(
     auto resp = m_agent->adcs_set(adcsSetRequest);
     deliverResponse(response, resp);
 }
+
+void SdkApiImpl::tfrs_get(
+    Onion::Response &response
+) {
+    auto resp = m_agent->tfrs_get();
+    deliverResponse(response, resp);
+}
