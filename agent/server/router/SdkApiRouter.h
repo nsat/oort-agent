@@ -33,4 +33,6 @@ class SdkApiRouter : public Onion::Url {
         Onion::Response &response) = 0;
     virtual void adcs_post(
         const AdcsSetRequest &adcsSetRequest, Onion::Response &response) = 0;
+    virtual void tfrs_get(
+        Onion::Response &response) = 0;
 };
