@@ -91,11 +91,22 @@ int main(int argc, char * const argv[]) {
     Log::info("starting up");
 
     if (config.isCANInterfaceEnabled()) {
-        can_server = new AgentUAVCANServer(config.getCANInterface(), config.getUAVCANNodeID());
-        can_server->start();
+        try {
+            Log::info("Initializing UAVCAN client");
+            can_client = new AgentUAVCANClient(config.getCANInterface(), config.getUAVCANNodeID());
+            agent.setUavClient(can_client);
 
-        can_client = new AgentUAVCANClient(config.getCANInterface(), config.getUAVCANNodeID());
-        agent.setUavClient(can_client);
+            Log::info("Starting UAVCAN server");
+            can_server = new AgentUAVCANServer(config.getCANInterface(), config.getUAVCANNodeID());
+            can_server->start();
+            agent.setAdcsMgr(&can_server->m_mgr);
+        }
+        catch (uavcan_linux::Exception e) {
+            Log::error("Fatal error starting can: ?", e.what());
+            if (can_server != nullptr) delete can_server;
+            if (can_client != nullptr) delete can_client;
+            exit(1);
+        }
     }
 
     server = new Onion::Onion(O_POLL | O_NO_SIGTERM);
@@ -119,6 +130,8 @@ int main(int argc, char * const argv[]) {
     if (config.isCANInterfaceEnabled()) {
         can_server->stop();
         delete can_server;
+        delete can_client;
     }
     delete server;
+    Log::info("exiting");
 }
