@@ -24,7 +24,7 @@
 #include "OnionLog.h"
 #include "AgentUAVCANServer.h"
 #include "AgentUAVCANClient.h"
-#include "version.h"
+#include "version.h"  // NOLINT
 
 static const char VERSION[] = "@(#) Release: " RELEASE_VERSION " Build: " BUILD_VERSION;
 
