@@ -308,3 +308,25 @@ int runProcessGetOutput(const string &cmd, const char *const argv[], size_t max_
         return status;
     }
 }
+
+BinSemaphore::BinSemaphore() {
+    if (sem_init(&sem, 0, 1) != 0) {
+        throw system_error(errno, generic_category(), "initializing semaphore");
+    }
+}
+
+BinSemaphore::~BinSemaphore() {
+    sem_destroy(&sem);
+}
+
+int BinSemaphore::wait() {
+    return sem_wait(&sem);
+}
+
+int BinSemaphore::timedwait(const timespec& abs_timeout) {
+    return sem_timedwait(&sem, &abs_timeout);
+}
+
+int BinSemaphore::post() {
+    return sem_post(&sem);
+}

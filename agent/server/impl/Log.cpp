@@ -7,6 +7,7 @@
  */
 
 #include "Log.h"
+#include "Utils.h"
 #include <syslog.h>
 #include <time.h>
 #include <iostream>
@@ -22,18 +23,15 @@ namespace {
     // private functions/data
     levels l_level = Info;
     ostream *l_out = &cerr;
-    const char *DEFAULT_TIMEFMT  = "[%Y-%m-%d %H:%M:%SZ] ";
-    string *l_timefmt = NULL;
+    const string l_timefmt  = "[%Y-%m-%d %H:%M:%SZ] ";
     bool using_syslog = false;
     string l_ident;
+    BinSemaphore l_sem;
 
     string fmttime() {
-        if (!l_timefmt) {
-            l_timefmt = new string(DEFAULT_TIMEFMT);
-        }
         char time_buf[100];
         time_t t = time(NULL);
-        if (strftime(time_buf, sizeof(time_buf), l_timefmt->c_str(), gmtime(&t)) != 0) {
+        if (strftime(time_buf, sizeof(time_buf), l_timefmt.c_str(), gmtime(&t)) != 0) {
             return time_buf;
         } else {
             return {};
@@ -64,11 +62,13 @@ namespace {
             }
             s_out << msg.substr(mstart);
 
+            l_sem.wait();
             if (using_syslog) {
                 syslog(Log::syslogLevels[level], "%s", s_out.str().c_str());
             } else {
                 *l_out << s_out.str() << endl;
             }
+            l_sem.post();
         }
     }
 }  // namespace
