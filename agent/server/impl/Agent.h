@@ -21,6 +21,7 @@
 #include "FileInfo.h"
 #include "InfoRequest.h"
 #include "InfoResponse.h"
+#include "PingResponse.h"
 #include "RetrieveFileRequest.h"
 #include "SendFileRequest.h"
 #include "SendFileResponse.h"
@@ -109,6 +110,7 @@ class Agent {
     // Collector methods
     ResponseCode<InfoResponse> collector_info(InfoRequest &req);  // model not defined const
     ResponseCode<TransferMeta> meta(const std::string &uuid);
+    ResponseCode<PingResponse> ping();
 
     // version strings
     std::string getBuildVersion();

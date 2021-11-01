@@ -170,6 +170,15 @@ TransferMeta Agent::read_transfer_meta(const string &file) {
     return tm;
 }
 
+ResponseCode<PingResponse> Agent::ping() {
+    ResponseCode<PingResponse> resp;
+
+    resp.code = Code::Ok;
+    resp.result = PingResponse();
+    resp.result.setResponse("PONG");
+    return resp;
+}
+
 ResponseCode<TransferMeta> Agent::meta(const std::string &uuid) {
     ResponseCode<TransferMeta> resp;
 
