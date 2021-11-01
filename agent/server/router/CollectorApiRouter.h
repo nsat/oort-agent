@@ -18,6 +18,7 @@ using org::openapitools::server::model::InfoRequest;
 class CollectorApiRouter : public Onion::Url {
  public:
     CollectorApiRouter();
+    virtual void ping(Onion::Response &response) = 0;
     virtual void info(InfoRequest &request, Onion::Response &response) = 0;
     virtual void meta(
         const std::string &uuid, Onion::Response &response) = 0;

@@ -5,6 +5,18 @@ info:
 servers:
   - url: http://localhost:2005/collector/v1
 paths:
+  /ping:
+    get:
+      tags:
+        - collector
+      description: Ping.  Tell if the agent is up.
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/PingResponse"
   /info:
     description: >
         Gather list of available files for collector, along
@@ -155,3 +167,15 @@ components:
           type: object
           additionalProperties:
               type: string
+
+    PingResponse:
+      title: PingResponse
+      description: Response to a ping
+      type: object
+      required: ["response"]
+      properties:
+        response:
+          description: the response
+          type: string
+          enum:
+            - PONG
