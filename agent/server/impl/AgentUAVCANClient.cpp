@@ -56,12 +56,18 @@ void AgentUAVCANClient::AdcsSet(const AdcsSetRequest& req, AdcsSetResponse& rsp)
     auto timeout = uavcan::MonotonicDuration::fromMSec(20);
 
     org::openapitools::server::model::AdcsSetResponse uresp;
-    // validate?
-    // fill(can_req.adcs_mode.begin(), can_req.adcs_mode.end(), 0);
-    copy_n(req.getMode().getMode().begin(),
-           min(static_cast<unsigned int>(req.getMode().getMode().size()),
-               static_cast<unsigned int>(can_req.adcs_mode.capacity())),
-           can_req.adcs_mode.begin());
+    auto const mode = req.getMode().getMode();
+    if (mode == "IDLE") {
+        can_req.adcs_mode = can_req.ADCS_COMMAND_IDLE;
+    } else if (mode == "NADIR") {
+        can_req.adcs_mode = can_req.ADCS_COMMAND_NADIR;
+    } else if (mode == "TRACK") {
+        can_req.adcs_mode = can_req.ADCS_COMMAND_TRACK;
+    } else  {
+        rsp.setStatus("FAIL");
+        rsp.setReason("Unknown ADCS comand mode " + mode);
+        return;
+    }
 
     // fill(can_req.antenna.begin(), can_req.antenna.end(), 0);
     copy_n(req.getAntenna().begin(),
