@@ -56,24 +56,24 @@ void AgentUAVCANClient::AdcsSet(const AdcsSetRequest& req, AdcsSetResponse& rsp)
     auto timeout = uavcan::MonotonicDuration::fromMSec(20);
 
     org::openapitools::server::model::AdcsSetResponse uresp;
-    auto const mode = req.getMode().getMode();
+    auto const mode = req.getCommand().getCommand();
     if (mode == "IDLE") {
-        can_req.adcs_mode = can_req.ADCS_COMMAND_IDLE;
+        can_req.adcs_command = can_req.ADCS_COMMAND_IDLE;
     } else if (mode == "NADIR") {
-        can_req.adcs_mode = can_req.ADCS_COMMAND_NADIR;
+        can_req.adcs_command = can_req.ADCS_COMMAND_NADIR;
     } else if (mode == "TRACK") {
-        can_req.adcs_mode = can_req.ADCS_COMMAND_TRACK;
+        can_req.adcs_command = can_req.ADCS_COMMAND_TRACK;
     } else  {
         rsp.setStatus("FAIL");
         rsp.setReason("Unknown ADCS comand mode " + mode);
         return;
     }
 
-    // fill(can_req.antenna.begin(), can_req.antenna.end(), 0);
-    copy_n(req.getAntenna().begin(),
-           min(static_cast<unsigned int>(req.getAntenna().size()),
-               static_cast<unsigned int>(can_req.antenna.capacity())),
-           can_req.antenna.begin());
+    // fill(can_req.aperture.begin(), can_req.aperture.end(), 0);
+    copy_n(req.getAperture().begin(),
+           min(static_cast<unsigned int>(req.getAperture().size()),
+               static_cast<unsigned int>(can_req.aperture.capacity())),
+           can_req.aperture.begin());
 
     Log::debug("latlon ");
     auto t = req.getTarget();

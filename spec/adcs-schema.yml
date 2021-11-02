@@ -58,27 +58,20 @@ components:
         q4:
           type: number
 
-    AdcsMode:
-      description: SPACS attitude control mode
-      required: [mode]
+    AdcsCommand:
+      description: SPACS attitude control command
+      required: [command]
       properties:
-        mode:
+        command:
           type: string
-          maxLength: 14
+          maxLength: 5
           enum:
-            - NO-OP
-            - BDOT
-            - DETUMBLE
-            - SUNPOINT
-            - NADIRPOINTYAW
-            - SUNSPIN
-            - NADIRPOINTSUN
-            - SUNPOINTNADIR
-            - LATLONTRACK
-            - INERTIALPOINT
+            - IDLE
+            - NADIR
+            - TRACK
 
-    Antenna:
-      description: Antenna name to use in ADCS pointing requests
+    Aperture:
+      description: Aperture (imager, antenna, etc) name to use in ADCS pointing requests
       type: string
       maxLength: 24
 
@@ -103,7 +96,7 @@ components:
       properties:
         mode:
           type: string
-          "$ref": "#/components/schemas/AdcsMode"
+          description: The current ADCS mode
         age:
           type: integer
           description: Time in seconds since last live reading from ACDS
@@ -119,32 +112,34 @@ components:
       required:
         - mode
       properties:
-        mode:
-          "$ref": "#/components/schemas/AdcsMode"
-        antenna:
-          "$ref": "#/components/schemas/Antenna"
+        command:
+          "$ref": "#/components/schemas/AdcsCommand"
+        aperture:
+          "$ref": "#/components/schemas/Aperture"
         target:
           "$ref": "#/components/schemas/AdcsTarget"
+        angle:
+          type: number
       anyOf: 
         - allOf:
             - properties:
                 mode: 
                   enum: [IDLE]
             - required:
-                - mode
+                - command
         - allOf:
             - properties:
                 mode: 
                   enum: [NADIR]
             - required:
-                - mode
+                - command
                 - antenna
         - allOf:
             - properties:
                 mode: 
                   enum: [TRACK]
             - required:
-                - mode
+                - command
                 - antenna
                 - target
           

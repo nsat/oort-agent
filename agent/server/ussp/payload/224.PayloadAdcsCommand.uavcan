@@ -1,20 +1,22 @@
-uint8 adcs_mode
-# enum specifying adcs mode
+uint8 adcs_command
+# enum specifying adcs command
 uint8 ADCS_COMMAND_IDLE = 0
 uint8 ADCS_COMMAND_NADIR = 1
 uint8 ADCS_COMMAND_TRACK = 2
 
-uint8[25] antenna
-# string name of the antenna to center the operation on
+uint8[25] aperture
+# named aperture to center the operation on
 
 TargetT target
-# target for adcs to point at
-# not applicable to every mode
+# required target for TRACK command
+
+float32 angle
+# optional roll angle for NADIR
 ---
 uint8 status
 # status of request
-# 0 = OK
-# 1 = FAIL
+uint8 STATUS_OK = 0
+uint8 STATUS_FAIL = 1
 
 uint8[<255] reason
 # reason for failure
