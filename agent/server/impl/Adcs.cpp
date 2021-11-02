@@ -17,7 +17,7 @@ const double R_EARTH = 6371000.0;
 // Adapt - overloaded function to convert between UAVCAN types
 // and OAPI types.
 static Adcs_quat_t
-Adapt(ussp::payload::QuatT_<0> src) {
+Adapt(ussp::payload::QuatT src) {
     Adcs_quat_t r;
     r.setQ1(src.q1);
     r.setQ2(src.q2);
@@ -27,7 +27,7 @@ Adapt(ussp::payload::QuatT_<0> src) {
 }
 
 static org::openapitools::server::model::Adcs_xyz_float_t
-Adapt(ussp::payload::XyzFloatT_<0> src) {
+Adapt(ussp::payload::XyzFloatT src) {
     org::openapitools::server::model::Adcs_xyz_float_t r;
     r.setX(src.x);
     r.setY(src.y);
@@ -83,9 +83,9 @@ Adapt(const org::openapitools::server::model::Adcs_quat_t& src) {
     return r;
 }
 
-static ussp::payload::XyzFloatT_<0>
+static ussp::payload::XyzFloatT
 Adapt(const org::openapitools::server::model::Adcs_xyz_float_t& src) {
-    ussp::payload::XyzFloatT_<0> r;
+    ussp::payload::XyzFloatT r;
     r.x = src.getX();
     r.y = src.getY();
     r.z = src.getZ();
@@ -121,7 +121,7 @@ static double asin_safe(double a) {
 static double get_gha(const double unix_timestamp) {
     double jd = unix_timestamp / 86400 + 2440587.5;
     const double C1 = 1.72027916940703639e-2;
-    const double C1P2P = C1 + M_PI_2;
+    const double C1P2P = C1 + 2 * M_PI;
     const double THGR70 = 1.7321343856509374;
     const double FK5R = 5.07551419432269442e-15;
     const double days50 = jd - 2400000.5 - 33281.0;
@@ -130,9 +130,9 @@ static double get_gha(const double unix_timestamp) {
     const double ds70 = static_cast<double>(ids70);
     const double trfac = ts70 - ds70;
     double theta = THGR70 + C1*ds70 + C1P2P*trfac + ts70*ts70*FK5R;
-    theta = fmod(theta, M_PI_2);
+    theta = fmod(theta, 2 * M_PI);
     if (theta < 0.0) {
-        theta += M_PI_2;
+        theta += 2 * M_PI;
     }
     double gha = theta;
     return gha;
