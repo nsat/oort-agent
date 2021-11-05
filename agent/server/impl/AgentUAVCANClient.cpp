@@ -49,13 +49,13 @@ AgentUAVCANClient::AgentUAVCANClient(std::string iface, unsigned int node_id) {
     adcsset_client = node->makeBlockingServiceClient<ussp::payload::PayloadAdcsCommand>();
 }
 
-void AgentUAVCANClient::AdcsSet(const AdcsSetRequest& req, AdcsSetResponse& rsp) {
+void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandResponse& rsp) {
     ussp::payload::PayloadAdcsCommand::Request can_req;
     int can_stat;
 
     auto timeout = uavcan::MonotonicDuration::fromMSec(20);
 
-    org::openapitools::server::model::AdcsSetResponse uresp;
+    org::openapitools::server::model::AdcsCommandResponse uresp;
     auto const mode = req.getCommand().getCommand();
     if (mode == "IDLE") {
         can_req.adcs_command = can_req.ADCS_COMMAND_IDLE;
@@ -76,9 +76,34 @@ void AgentUAVCANClient::AdcsSet(const AdcsSetRequest& req, AdcsSetResponse& rsp)
            can_req.aperture.begin());
 
     Log::debug("latlon ");
-    auto t = req.getTarget();
-    can_req.target.lat = t.getLat();
-    can_req.target.lon = t.getLon();
+    if (req.targetIsSet()) {
+        auto t = req.getTarget();
+        ussp::payload::TargetT tgt;
+        tgt.lat = t.getLat();
+        tgt.lon = t.getLon();
+        can_req.target.push_back(tgt);
+    }
+    if (req.angleIsSet()) {
+        auto t = req.getTarget();
+        can_req.angle.push_back(req.getAngle());
+    }
+    if (req.quatIsSet()) {
+        auto rq = req.getQuat();
+        ussp::payload::QuatT q;
+        q.q1 = rq.getQ1();
+        q.q2 = rq.getQ2();
+        q.q3 = rq.getQ3();
+        q.q4 = rq.getQ4();
+        can_req.quat.push_back(q);
+    }
+    if (req.vectorIsSet()) {
+        auto rv = req.getVector();
+        ussp::payload::XyzFloatT v;
+        v.x = rv.getX();
+        v.y = rv.getY();
+        v.z = rv.getZ();
+        can_req.vector.push_back(v);
+    }
 
     can_stat = adcsset_client->blockingCall(SBRAIN_NODE_ID, can_req, timeout);
     ussp::payload::PayloadAdcsCommand::Response can_rsp = adcsset_client->getResponse();

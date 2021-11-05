@@ -44,9 +44,9 @@ void SdkApiImpl::adcs_get(
 }
 
 void SdkApiImpl::adcs_post(
-    const AdcsSetRequest &adcsSetRequest, Onion::Response &response
+    const AdcsCommandRequest &adcsCommandRequest, Onion::Response &response
 ) {
-    auto resp = m_agent->adcs_set(adcsSetRequest);
+    auto resp = m_agent->adcs_command(adcsCommandRequest);
     deliverResponse(response, resp);
 }
 

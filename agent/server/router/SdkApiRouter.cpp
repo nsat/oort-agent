@@ -46,7 +46,7 @@ SdkApiRouter::SdkApiRouter() {
         if (GetMethod(req) == OR_GET) {
             this->adcs_get(resp);
         } else if (GetMethod(req) == OR_POST) {
-            AdcsSetRequest areq;
+            AdcsCommandRequest areq;
             GetPostData(areq, req);
             this->adcs_post(areq, resp);
         } else {

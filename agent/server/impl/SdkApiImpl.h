@@ -20,8 +20,8 @@
 #include "SendFileResponse.h"
 
 #include "AdcsResponse.h"
-#include "AdcsSetRequest.h"
-#include "AdcsSetResponse.h"
+#include "AdcsCommandRequest.h"
+#include "AdcsCommandResponse.h"
 
 #include "TfrsResponse.h"
 
@@ -44,7 +44,7 @@ class SdkApiImpl : public SdkApiRouter {
     void adcs_get(
         Onion::Response &response);
     void adcs_post(
-        const AdcsSetRequest &adcsSetRequest, Onion::Response &response);
+        const AdcsCommandRequest &adcsCommandRequest, Onion::Response &response);
     void tfrs_get(
         Onion::Response &response);
 

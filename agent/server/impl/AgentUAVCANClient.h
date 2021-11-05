@@ -12,8 +12,8 @@
 #include <uavcan_linux/uavcan_linux.hpp>
 #include <ussp/payload/PayloadAdcsCommand.hpp>
 #include "AdcsResponse.h"
-#include "AdcsSetRequest.h"
-#include "AdcsSetResponse.h"
+#include "AdcsCommandRequest.h"
+#include "AdcsCommandResponse.h"
 
 const int SBRAIN_NODE_ID = 11;
 
@@ -35,6 +35,6 @@ class AgentUAVCANClient {
  public:
     AgentUAVCANClient(std::string iface, unsigned int node_id);
 
-    void AdcsSet(const org::openapitools::server::model::AdcsSetRequest& req,
-                 org::openapitools::server::model::AdcsSetResponse& rsp);
+    void AdcsCommand(const org::openapitools::server::model::AdcsCommandRequest& req,
+                     org::openapitools::server::model::AdcsCommandResponse& rsp);
 };

@@ -106,11 +106,11 @@ components:
         hk:
           "$ref": "adcs-hk.yml#/components/schemas/AdcsHk"
 
-    AdcsSetRequest:
+    AdcsCommandRequest:
       description: Request to set ADCS mode and parameters
       type: object
       required:
-        - mode
+        - command
       properties:
         command:
           "$ref": "#/components/schemas/AdcsCommand"
@@ -120,40 +120,31 @@ components:
           "$ref": "#/components/schemas/AdcsTarget"
         angle:
           type: number
-      anyOf: 
-        - allOf:
-            - properties:
-                mode: 
-                  enum: [IDLE]
-            - required:
-                - command
-        - allOf:
-            - properties:
-                mode: 
-                  enum: [NADIR]
-            - required:
-                - command
-                - antenna
-        - allOf:
-            - properties:
-                mode: 
-                  enum: [TRACK]
-            - required:
-                - command
-                - antenna
-                - target
+        vector:
+          "$ref": "#/components/schemas/Adcs_xyz_float_t"
+        quat:
+          "$ref": "#/components/schemas/Adcs_quat_t"
           
-    AdcsSetResponse:
-      description: Response to set ADCS request
+    AdcsCommandResponse:
+      description: Response to ADCS command request
       type: object
       required:
         - status
+        - mode
       properties:
         status:
           type: string
           enum: [OK, FAIL]
         reason:
           type: string
+        mode:
+          type: string
+        target:
+          "$ref": "#/components/schemas/AdcsTarget"
+        vector:
+          "$ref": "#/components/schemas/Adcs_xyz_float_t"
+        quat:
+          "$ref": "#/components/schemas/Adcs_quat_t"
 
     TfrsResponse:
       description: TFRS time and position

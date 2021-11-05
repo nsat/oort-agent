@@ -1,10 +1,11 @@
-#include "catch2/catch.hpp"
-
 #include <unistd.h>
 #include <fstream>
 #include "Config.h"
 #include "Agent.h"
 #include "Log.h"
+
+// Note, Catch2 defines conflict with uavcan defines, so include this last
+#include "catch2/catch.hpp"
 
 using namespace std;
 using Catch::Matchers::StartsWith;

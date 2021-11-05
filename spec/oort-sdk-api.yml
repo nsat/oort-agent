@@ -47,20 +47,20 @@ paths:
         content:
           "application/json":
             schema:
-              "$ref": "adcs-schema.yml#/components/schemas/AdcsSetRequest"
+              "$ref": "adcs-schema.yml#/components/schemas/AdcsCommandRequest"
       responses:
         '200':
           description: OK
           content:
             "application/json":
               schema:
-                "$ref": "adcs-schema.yml#/components/schemas/AdcsSetResponse"
+                "$ref": "adcs-schema.yml#/components/schemas/AdcsCommandResponse"
         '400':
           description: ERROR
           content:
             "application/json":
               schema:
-                "$ref": "adcs-schema.yml#/components/schemas/AdcsSetResponse"
+                "$ref": "adcs-schema.yml#/components/schemas/AdcsCommandResponse"
 
   /send_file:
     description: Send a file to a destination

@@ -322,8 +322,8 @@ ResponseCode<AdcsResponse> Agent::adcs_get() {
     return resp;
 }
 
-ResponseCode<AdcsSetResponse> Agent::adcs_set(const AdcsSetRequest &req) {
-    ResponseCode<AdcsSetResponse> resp;
+ResponseCode<AdcsCommandResponse> Agent::adcs_command(const AdcsCommandRequest &req) {
+    ResponseCode<AdcsCommandResponse> resp;
 
     if (uavcan_client == nullptr) {
         resp.code = Code::Bad_Request;
@@ -331,7 +331,7 @@ ResponseCode<AdcsSetResponse> Agent::adcs_set(const AdcsSetRequest &req) {
         return resp;
     }
     resp.code = Code::Ok;
-    uavcan_client->AdcsSet(req, resp.result);
+    uavcan_client->AdcsCommand(req, resp.result);
     return resp;
 }
 

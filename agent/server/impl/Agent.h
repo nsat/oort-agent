@@ -20,8 +20,8 @@
 #include "Config.h"
 #include "Adcs.h"
 #include "AdcsResponse.h"
-#include "AdcsSetRequest.h"
-#include "AdcsSetResponse.h"
+#include "AdcsCommandRequest.h"
+#include "AdcsCommandResponse.h"
 #include "AvailableFilesResponse.h"
 #include "FileInfo.h"
 #include "InfoRequest.h"
@@ -121,7 +121,7 @@ class Agent {
 
     // SDK ADCS methods
     ResponseCode<AdcsResponse> adcs_get();
-    ResponseCode<AdcsSetResponse> adcs_set(const AdcsSetRequest &req);
+    ResponseCode<AdcsCommandResponse> adcs_command(const AdcsCommandRequest &req);
 
     // SDK TFRS methods
     ResponseCode<TfrsResponse> tfrs_get();
