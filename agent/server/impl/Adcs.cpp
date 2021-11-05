@@ -93,7 +93,7 @@ Adapt(const org::openapitools::server::model::Adcs_xyz_float_t& src) {
 }
 
 static double rad2deg(double a) {
-    return a * 180.0 / M_PI;
+    return 180.0 / M_PI * a;
 }
 
 static double acos_safe(double a) {
@@ -158,7 +158,7 @@ static org::openapitools::server::model::Adcs_euler_t DeriveEulerAngles(
     org::openapitools::server::model::Adcs_euler_t value;
     // math here
     auto q = ucan_adcs.q_bo_est;
-    const double dcm_00 = pow(q.q4, 2) + pow(q.q1, 2) - pow(q.q2, 2) - pow(q.q2, 2);
+    const double dcm_00 = pow(q.q4, 2) + pow(q.q1, 2) - pow(q.q2, 2) - pow(q.q3, 2);
     const double dcm_01 = 2.0 * (q.q1 * q.q2 + q.q3 * q.q4);
     const double dcm_02 = 2.0 * (q.q1 * q.q3 - q.q2 * q.q4);
     const double dcm_12 = 2.0 * (q.q2 * q.q3 + q.q1 * q.q4);
