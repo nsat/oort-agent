@@ -65,6 +65,7 @@ TEST_SRCS= \
 	${SERVER_BASE}/main-api-server-test.cpp \
 	${SERVER_BASE}/tests/Utils_test.cpp \
 	${SERVER_BASE}/tests/Log_test.cpp \
+	${SERVER_BASE}/tests/Adcs_test.cpp \
 	${SERVER_BASE}/tests/Agent_test.cpp \
 	${SERVER_BASE}/tests/Healthcheck_test.cpp \
 	${SERVER_BASE}/tests/utils/hk_error.sh \
@@ -212,7 +213,7 @@ test: ${BUILD}/oort-server
 	bash tests/test-api-server.sh
 
 unittest: ${BUILD}/${SERVER_BASE}/test_agent
-	${BUILD}/${SERVER_BASE}/test_agent
+	${BUILD}/${SERVER_BASE}/test_agent ${TESTS}
 
 ## run - start up oort-server locally
 run: ${BUILD}/oort-server
