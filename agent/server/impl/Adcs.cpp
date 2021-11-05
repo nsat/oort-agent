@@ -93,7 +93,7 @@ Adapt(const org::openapitools::server::model::Adcs_xyz_float_t& src) {
 }
 
 static double rad2deg(double a) {
-    return 180.0 / M_PI * a;
+    return a * 180.0 / M_PI;
 }
 
 static double acos_safe(double a) {
@@ -146,10 +146,10 @@ const double xyz_norm(const org::openapitools::server::model::Adcs_xyz_float_t& 
     return sqrt(pow(v.getX(), 2) + pow(v.getY(), 2) + pow(v.getZ(), 2));
 }
 
-static float DeriveControlErrorAngleDeg(
+static double DeriveControlErrorAngleDeg(
     org::openapitools::server::model::AdcsHk& oapi_hk,
     const ussp::payload::PayloadAdcsFeed& ucan_adcs) {
-    return 2 * rad2deg(acos_safe(ucan_adcs.control_error_q.q4));
+    return 2.0 * rad2deg(acos_safe(ucan_adcs.control_error_q.q4));
 }
 
 static org::openapitools::server::model::Adcs_euler_t DeriveEulerAngles(
@@ -169,7 +169,7 @@ static org::openapitools::server::model::Adcs_euler_t DeriveEulerAngles(
     return value;
 }
 
-static float DeriveLatDeg(
+static double DeriveLatDeg(
     org::openapitools::server::model::AdcsHk& oapi_hk,
     const ussp::payload::PayloadAdcsFeed& ucan_adcs) {
     auto r_ecef = oapi_hk.getREcef();
@@ -181,7 +181,7 @@ static float DeriveLatDeg(
     }
 }
 
-static float DeriveLonDeg(
+static double DeriveLonDeg(
     org::openapitools::server::model::AdcsHk& oapi_hk,
     const ussp::payload::PayloadAdcsFeed& ucan_adcs) {
     auto r_ecef = oapi_hk.getREcef();
@@ -193,7 +193,7 @@ static float DeriveLonDeg(
     }
 }
 
-static float DeriveAltitude(
+static double DeriveAltitude(
     org::openapitools::server::model::AdcsHk& oapi_hk,
     const ussp::payload::PayloadAdcsFeed& ucan_adcs) {
     double r_sat = xyz_norm(oapi_hk.getREcef());
@@ -270,6 +270,7 @@ TfrsResponse AdcsManager::getTfrs() {
 void AdcsManager::setAdcs(const ussp::payload::PayloadAdcsFeed& adcs) {
     AdcsHk hk = m_adcs.getHk();
     convert(hk, adcs);
+    m_adcs.setMode(hk.getAcsModeActive());
     m_adcs.setHk(hk);
     m_adcs_mtime = chrono::system_clock::now();
 }

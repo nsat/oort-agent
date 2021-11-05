@@ -1,0 +1,230 @@
+{
+  "acs_mode": "NADIRPOINTSUN",
+  "acs_mode_num": 6,
+  "altitude": 487190.5724304272,
+  "angle_magnad_eci_deg": 1.5415308310062037,
+  "angle_magnad_error_deg": 0.7753359088680072,
+  "angle_magnad_meas_deg": 2.316866739874211,
+  "angle_magsun_eci_deg": 79.7621734529411,
+  "angle_magsun_error_deg": 100.2378265470589,
+  "angle_magsun_meas_deg": 180,
+  "angle_nadsun_eci_deg": 78.93113047097384,
+  "angle_nadsun_error_deg": 101.06886952902616,
+  "angle_nadsun_meas_deg": 180,
+  "angle_to_nadir_deg": 4,
+  "attitude_error": {
+    "pitch": -2.349114,
+    "roll": 3.45513,
+    "yaw": 0,
+    "yawsun": 0
+  },
+  "attitude_error_ekf": {
+    "pitch": -1.7051632399334857,
+    "roll": 3.020755243001707,
+    "yaw": -162.75798475750366
+  },
+  "attitude_rate": {
+    "pitch": -0.524235,
+    "roll": 0.199784,
+    "yaw": 0,
+    "yawsun": 0
+  },
+  "bdot": {
+    "x": -82.567566,
+    "y": -656.338196,
+    "z": 49.767551
+  },
+  "control_error_angle_deg": 6.9013199875592015,
+  "control_error_omega": {
+    "x": -0.001392,
+    "y": -0.000211,
+    "z": 0.002874
+  },
+  "control_error_q": {
+    "q1": 0.027088,
+    "q2": -0.013493,
+    "q3": 0.052024,
+    "q4": 0.998187
+  },
+  "control_q_cmd": {
+    "q1": -3.2690998799631495e-07,
+    "q2": -3.1711198835270756e-07,
+    "q3": -0.995124633165097,
+    "q4": 0.09862537436087997
+  },
+  "eclipse_flag": 1,
+  "ekf_covariance_omega": {
+    "x": 3.627604e-09,
+    "y": 3.944453e-09,
+    "z": 9.976294e-09
+  },
+  "ekf_covariance_q": {
+    "q1": 1.358643e-07,
+    "q2": 1.501336e-05,
+    "q3": 1.308801e-07,
+    "q4": 8.173117e-08
+  },
+  "estimated_omegabo_ekf": {
+    "x": -0.001392,
+    "y": -0.000211,
+    "z": 0.00294
+  },
+  "estimated_qbo_ekf": {
+    "q1": -0.010756,
+    "q2": -0.028287,
+    "q3": -0.98819,
+    "q4": 0.150217
+  },
+  "estimated_qbo_static": {
+    "q1": 0.030140794516613993,
+    "q2": -0.020489133982377845,
+    "q3": 0.000617969447427758,
+    "q4": 0.9993354521922664
+  },
+  "lat_deg": 82.64647077564702,
+  "lease_time": 0,
+  "lemadcs_status": {
+    "acs_sol_valid": 1,
+    "att_sol_valid": 1,
+    "css_read": 0,
+    "css_valid": 0,
+    "drag_control_active": 0,
+    "dre_healthy": 1,
+    "dre_mux_to_lemadcs": 1,
+    "dre_tlm_valid": 1,
+    "ekf_converged": 1,
+    "lease_active": 0,
+    "logging_functional": 1,
+    "mag_read": 1,
+    "mag_valid": 1,
+    "nads_m1_read": 1,
+    "nads_m1_valid": 1,
+    "nads_m2_read": 0,
+    "nads_m2_valid": 0,
+    "normal_boot": 1,
+    "obc_time_sync": 1,
+    "roll_rate_below_critical": 1,
+    "roll_rate_below_panic": 1,
+    "roll_rate_stable": 1,
+    "rtc_time_valid": 1,
+    "sgp4_valid": 1,
+    "tle_can_parse": 1,
+    "tle_recent": 1,
+    "wheel_speed_below_critical": 1,
+    "wheel_speed_below_panic": 1
+  },
+  "lon_deg": -119.95131875423876,
+  "mag_eci": {
+    "rss": 46452.88463241705,
+    "x": -806.0354,
+    "y": 7137.254883,
+    "z": -45894.230469
+  },
+  "mag_vector": {
+    "rss": 46097.977955413604,
+    "x": 849.106262,
+    "y": 1017.442383,
+    "z": 46078.925781
+  },
+  "meta": {
+    "block_uuid": "f5040c27-085a-4b70-9f85-9fe391b2d248",
+    "process": "telemetry-ingestor",
+    "source": "obc_historical_high",
+    "spire_id": "FM100",
+    "time": "2021-11-02T23:35:02.882158"
+  },
+  "mt_dipole_cmd": {
+    "x": -0.019373,
+    "y": 0.088618,
+    "z": -0.00239
+  },
+  "mt_duty": {
+    "x": -24,
+    "y": -110,
+    "z": 5
+  },
+  "mt_torque": {
+    "x": 4085.853932156028,
+    "y": 890.657665189133,
+    "z": -94.957010011775
+  },
+  "nadir_vector_acs": {
+    "x": 0.040988,
+    "y": 0.060216,
+    "z": 0.997344
+  },
+  "nadir_vector_nads": {
+    "x": 0.032764,
+    "y": 0.059827,
+    "z": 0.997671
+  },
+  "opmode": "CONTROL",
+  "opmode_num": 0,
+  "qbo": {
+    "q1": 0,
+    "q2": 0,
+    "q3": 0,
+    "q4": 1
+  },
+  "r_ecef": {
+    "x": -438248.11324512196,
+    "y": -760559.6205128727,
+    "z": 6801784
+  },
+  "r_eci": {
+    "x": 95803.609375,
+    "y": -872544.5625,
+    "z": 6801784
+  },
+  "status_bitmask": 4127173119,
+  "sun_eci": {
+    "x": -0.757328,
+    "y": -0.599143,
+    "z": -0.259773
+  },
+  "sun_vector": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "total_control_torque": {
+    "x": 4085.8539347739847,
+    "y": 890.65765688849,
+    "z": -94.95701006769444
+  },
+  "type": "lemadcs_adcs_hk",
+  "unix_timestamp": 1635896101.78,
+  "uuid": "7e043ef0e2cf4488a5b3cf10c1e469c5",
+  "v_eci": {
+    "x": -7577.037109,
+    "y": -809.421448,
+    "z": -6.087934
+  },
+  "wheel_momentum": {
+    "x": 0.0020868657496155,
+    "y": -0.0003999352163205,
+    "z": 0.0021816371278905
+  },
+  "wheel_speed_cmd": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "wheel_speed_msd": {
+    "x": 1101,
+    "y": -211,
+    "z": 1151
+  },
+  "wheel_torque_cmd_acs": {
+    "rss": 8.703878448840282e-06,
+    "x": 2.617957e-06,
+    "y": -8.300643e-06,
+    "z": -5.591945e-08
+  },
+  "wheel_torque_cmd_dre": {
+    "rss": 8.424743319532055e-06,
+    "x": 2.73e-06,
+    "y": -7.97e-06,
+    "z": 5e-08
+  }
+}
