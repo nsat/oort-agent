@@ -92,14 +92,13 @@ THIRDPARTY_SRCS = \
 
 USSP_SRCS= \
 	${SERVER_BASE}/ussp/tfrs/223.ReceiverNavigationState.uavcan \
-	${SERVER_BASE}/ussp/payload/224.PayloadAdcsCommand.uavcan \
+	${SERVER_BASE}/ussp/payload/225.PayloadAdcsCommand.uavcan \
 	${SERVER_BASE}/ussp/payload/226.PayloadHealthCheck.uavcan \
 	${SERVER_BASE}/ussp/payload/233.PayloadAdcsFeed.uavcan \
 	$(SERVER_BASE)/ussp/payload/AcsMode.uavcan \
 	$(SERVER_BASE)/ussp/payload/TargetT.uavcan \
 	$(SERVER_BASE)/ussp/payload/QuatT.uavcan \
 	$(SERVER_BASE)/ussp/payload/XyzFloatT.uavcan \
-	$(SERVER_BASE)/ussp/payload/XyzInt16T.uavcan \
 	${EMPTY}
 
 OVERLAY_SRCS=$(SERVER_SRCS) $(TEST_SRCS) $(CMAKE_SRCS)
