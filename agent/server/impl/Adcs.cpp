@@ -37,20 +37,7 @@ Adapt(ussp::payload::XyzFloatT src) {
 
 static string
 Adapt(ussp::payload::AcsMode src) {
-    using ussp::payload::AcsMode ;
-    switch (src.mode) {
-        case AcsMode::NOOP:          return "NO-OP"; break;
-        case AcsMode::BDOT:          return "BDOT"; break;
-        case AcsMode::DETUMBLE:      return "DETUMBLE"; break;
-        case AcsMode::SUNPOINT:      return "SUNPOINT"; break;
-        case AcsMode::NADIRPOINTYAW: return "NADIRPOINTYAW"; break;
-        case AcsMode::SUNSPIN:       return "SUNSPIN"; break;
-        case AcsMode::NADIRPOINTSUN: return "NADIRPOINTSUN"; break;
-        case AcsMode::SUNPOINTNADIR: return "SUNPOINTNADIR"; break;
-        case AcsMode::LATLONTRACK:   return "LATLONTRACK"; break;
-        case AcsMode::INERTIALPOINT: return "INERTIALPOINT"; break;
-        default:                     return "UNKNOWN";
-    }
+    return DecodeAcsMode(src);
 }
 
 static double
@@ -279,4 +266,21 @@ AdcsResponse AdcsManager::getAdcs() {
     chrono::duration<double> since = chrono::system_clock::now() - m_adcs_mtime;
     m_adcs.setAge(since.count());
     return m_adcs;
+}
+
+const std::string DecodeAcsMode(const ussp::payload::AcsMode& src) {
+    using ussp::payload::AcsMode ;
+    switch (src.mode) {
+        case AcsMode::NOOP:          return "NO-OP"; break;
+        case AcsMode::BDOT:          return "BDOT"; break;
+        case AcsMode::DETUMBLE:      return "DETUMBLE"; break;
+        case AcsMode::SUNPOINT:      return "SUNPOINT"; break;
+        case AcsMode::NADIRPOINTYAW: return "NADIRPOINTYAW"; break;
+        case AcsMode::SUNSPIN:       return "SUNSPIN"; break;
+        case AcsMode::NADIRPOINTSUN: return "NADIRPOINTSUN"; break;
+        case AcsMode::SUNPOINTNADIR: return "SUNPOINTNADIR"; break;
+        case AcsMode::LATLONTRACK:   return "LATLONTRACK"; break;
+        case AcsMode::INERTIALPOINT: return "INERTIALPOINT"; break;
+        default:                     return "UNKNOWN";
+    }
 }

@@ -25,3 +25,5 @@ class AdcsManager {
     org::openapitools::server::model::AdcsResponse getAdcs();
     org::openapitools::server::model::TfrsResponse getTfrs();
 };
+
+const std::string DecodeAcsMode(const ussp::payload::AcsMode& mode);

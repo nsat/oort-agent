@@ -151,6 +151,16 @@ bool AgentConfig::parseOptions(int argc, char *const argv[]) {
                     return false;
                 }
                 break;
+            case 'N':
+                try {
+                    shim_node_id = stoul(str_arg);
+                    use_defaults.shim_node_id = false;
+                }
+                catch (const invalid_argument& e) {
+                    cerr << "Invalid shim node ID " << str_arg << endl;
+                    return false;
+                }
+                break;
             case '?':
                 // missing argument
                 wantUsage = true;
@@ -186,6 +196,9 @@ bool AgentConfig::parseOptions(int argc, char *const argv[]) {
     }
     if (use_defaults.loglevel) {
         Log::setLevel(defaults.loglevel);
+    }
+    if (use_defaults.shim_node_id) {
+        shim_node_id = defaults.shim_node_id;
     }
 
     initialized = true;
@@ -232,4 +245,8 @@ std::string AgentConfig::getCANInterface() {
 
 unsigned int AgentConfig::getUAVCANNodeID() {
     return uavcan_node_id;
+}
+
+unsigned int AgentConfig::getShimNodeID() {
+    return shim_node_id;
 }

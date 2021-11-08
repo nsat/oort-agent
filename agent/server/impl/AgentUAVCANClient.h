@@ -11,11 +11,12 @@
 
 #include <uavcan_linux/uavcan_linux.hpp>
 #include <ussp/payload/PayloadAdcsCommand.hpp>
+#include "Config.h"
 #include "AdcsResponse.h"
 #include "AdcsCommandRequest.h"
 #include "AdcsCommandResponse.h"
 
-const int SBRAIN_NODE_ID = 11;
+static const unsigned UAVCLIENT_TIMEOUT = 1000;
 
 /**
  * \brief Agent UAVCAN client
@@ -25,15 +26,14 @@ const int SBRAIN_NODE_ID = 11;
  * 
  */
 class AgentUAVCANClient {
-    std::string can_interface;
-    unsigned int uavcan_node_id;
+    AgentConfig& config;
     uavcan_linux::NodePtr node;
 
     void initNode();
     uavcan_linux::BlockingServiceClientPtr<ussp::payload::PayloadAdcsCommand> adcsset_client;
 
  public:
-    AgentUAVCANClient(std::string iface, unsigned int node_id);
+    AgentUAVCANClient(AgentConfig& config);
 
     void AdcsCommand(const org::openapitools::server::model::AdcsCommandRequest& req,
                      org::openapitools::server::model::AdcsCommandResponse& rsp);

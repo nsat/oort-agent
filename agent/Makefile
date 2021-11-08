@@ -221,11 +221,11 @@ run: ${BUILD}/oort-server
 
 ## runcan -- run with can interface enabled
 runcan: ${BUILD}/oort-server
-	${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12
+	${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12 -N 51
 
 ## gdb-runcan -- run under gdb with can interface enabled
 gdb-runcan: ${BUILD}/oort-server
-	gdb --args ${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12
+	gdb --args ${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12 -N 51
 
 ## vg-runcan -- run under valgrind with can interface enabled
 vg-runcan: ${BUILD}/oort-server

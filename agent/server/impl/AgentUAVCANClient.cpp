@@ -13,6 +13,7 @@
 #include <system_error>  // NOLINT(build/c++11)
 #include <vector>
 
+#include "Adcs.h"
 #include "Log.h"
 #include "AgentUAVCANClient.h"
 #include "Utils.h"
@@ -32,7 +33,8 @@ using namespace std;
 
 void AgentUAVCANClient::initNode() {
     std::vector<std::string> ifaces(1);
-    ifaces[0] = can_interface;
+    ifaces[0] = config.getCANInterface();
+    unsigned int uavcan_node_id = config.getUAVCANNodeID();
     node = uavcan_linux::makeNode(ifaces, "com.spire.linux_agent",
                                   uavcan::protocol::SoftwareVersion(),
                                   uavcan::protocol::HardwareVersion(),
@@ -42,9 +44,7 @@ void AgentUAVCANClient::initNode() {
 }
 
 
-AgentUAVCANClient::AgentUAVCANClient(std::string iface, unsigned int node_id) {
-    can_interface = iface;
-    uavcan_node_id = node_id;
+AgentUAVCANClient::AgentUAVCANClient(AgentConfig& config) : config(config) {
     initNode();
     adcsset_client = node->makeBlockingServiceClient<ussp::payload::PayloadAdcsCommand>();
 }
@@ -53,7 +53,7 @@ void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandRe
     ussp::payload::PayloadAdcsCommand::Request can_req;
     int can_stat;
 
-    auto timeout = uavcan::MonotonicDuration::fromMSec(20);
+    auto timeout = uavcan::MonotonicDuration::fromMSec(UAVCLIENT_TIMEOUT);
 
     org::openapitools::server::model::AdcsCommandResponse uresp;
     auto const mode = req.getCommand().getCommand();
@@ -105,8 +105,15 @@ void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandRe
         can_req.vector.push_back(v);
     }
 
-    can_stat = adcsset_client->blockingCall(SBRAIN_NODE_ID, can_req, timeout);
+    can_stat = adcsset_client->blockingCall(config.getShimNodeID(), can_req, timeout);
     ussp::payload::PayloadAdcsCommand::Response can_rsp = adcsset_client->getResponse();
+
+    if (can_stat <= 0 || !adcsset_client->wasSuccessful()) {  
+        // call failed
+        rsp.setStatus("FAIL");
+        rsp.setReason("Error contacting service: " + to_string(can_stat));
+        return;
+    }
 
     switch (can_rsp.status) {
         case 0:
@@ -121,4 +128,5 @@ void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandRe
     }
 
     rsp.setReason(can_rsp.reason.c_str());
+    rsp.setMode(DecodeAcsMode(can_rsp.mode));
 }

@@ -93,7 +93,7 @@ int main(int argc, char * const argv[]) {
     if (config.isCANInterfaceEnabled()) {
         try {
             Log::info("Initializing UAVCAN client");
-            can_client = new AgentUAVCANClient(config.getCANInterface(), config.getUAVCANNodeID());
+            can_client = new AgentUAVCANClient(config);
             agent.setUavClient(can_client);
 
             Log::info("Starting UAVCAN server");
