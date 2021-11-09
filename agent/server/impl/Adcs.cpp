@@ -16,8 +16,9 @@ const double R_EARTH = 6371000.0;
 
 // Adapt - overloaded function to convert between UAVCAN types
 // and OAPI types.
-static Adcs_quat_t
-Adapt(ussp::payload::QuatT src) {
+inline namespace Adaptor {
+const Adcs_quat_t
+Adapt(const ussp::payload::QuatT& src) {
     Adcs_quat_t r;
     r.setQ1(src.q1);
     r.setQ2(src.q2);
@@ -26,8 +27,8 @@ Adapt(ussp::payload::QuatT src) {
     return r;
 }
 
-static org::openapitools::server::model::Adcs_xyz_float_t
-Adapt(ussp::payload::XyzFloatT src) {
+const org::openapitools::server::model::Adcs_xyz_float_t
+Adapt(const ussp::payload::XyzFloatT& src) {
     org::openapitools::server::model::Adcs_xyz_float_t r;
     r.setX(src.x);
     r.setY(src.y);
@@ -35,32 +36,40 @@ Adapt(ussp::payload::XyzFloatT src) {
     return r;
 }
 
-static string
-Adapt(ussp::payload::AcsMode src) {
+const org::openapitools::server::model::AdcsTarget
+Adapt(const ussp::payload::TargetT& src) {
+    org::openapitools::server::model::AdcsTarget t;
+    t.setLat(src.lat);
+    t.setLon(src.lon);
+    return t;
+}
+
+const string
+Adapt(const ussp::payload::AcsMode& src) {
     return DecodeAcsMode(src);
 }
 
-static double
-Adapt(double src) {
+const double
+Adapt(const double src) {
     return src;
 }
 
-static float
-Adapt(float src) {
+const float
+Adapt(const float src) {
     return src;
 }
 
-static int
-Adapt(int src) {
+const int
+Adapt(const int src) {
     return src;
 }
 
-static unsigned int
-Adapt(unsigned int src) {
+const unsigned int
+Adapt(const unsigned int src) {
     return src;
 }
 
-static ussp::payload::QuatT
+const ussp::payload::QuatT
 Adapt(const org::openapitools::server::model::Adcs_quat_t& src) {
     ussp::payload::QuatT r;
     r.q1 = src.getQ1();
@@ -70,7 +79,7 @@ Adapt(const org::openapitools::server::model::Adcs_quat_t& src) {
     return r;
 }
 
-static ussp::payload::XyzFloatT
+const ussp::payload::XyzFloatT
 Adapt(const org::openapitools::server::model::Adcs_xyz_float_t& src) {
     ussp::payload::XyzFloatT r;
     r.x = src.getX();
@@ -78,6 +87,61 @@ Adapt(const org::openapitools::server::model::Adcs_xyz_float_t& src) {
     r.z = src.getZ();
     return r;
 }
+
+const ussp::payload::TargetT
+Adapt(const org::openapitools::server::model::AdcsTarget& src) {
+    ussp::payload::TargetT t;
+    t.lat = src.getLat();
+    t.lon = src.getLon();
+    return t;
+}
+
+const std::string DecodeAcsMode(const ussp::payload::AcsMode& src) {
+    using ussp::payload::AcsMode ;
+    switch (src.mode) {
+        case AcsMode::NOOP:          return Adaptor::NOOP; break;
+        case AcsMode::BDOT:          return Adaptor::BDOT; break;
+        case AcsMode::DETUMBLE:      return Adaptor::DETUMBLE; break;
+        case AcsMode::SUNPOINT:      return Adaptor::SUNPOINT; break;
+        case AcsMode::NADIRPOINTYAW: return Adaptor::NADIRPOINTYAW; break;
+        case AcsMode::SUNSPIN:       return Adaptor::SUNSPIN; break;
+        case AcsMode::NADIRPOINTSUN: return Adaptor::NADIRPOINTSUN; break;
+        case AcsMode::SUNPOINTNADIR: return Adaptor::SUNPOINTNADIR; break;
+        case AcsMode::LATLONTRACK:   return Adaptor::LATLONTRACK; break;
+        case AcsMode::INERTIALPOINT: return Adaptor::INERTIALPOINT; break;
+        default:                     return Adaptor::UNKNOWN;
+    }
+}
+
+const uint8_t EncodeAcsMode(const std::string& src) {
+    using ussp::payload::AcsMode ;
+    if (src == Adaptor::NOOP) { 
+        return AcsMode::NOOP;
+    } else if (src == Adaptor::BDOT) { 
+        return AcsMode::BDOT;
+    } else if (src == Adaptor::DETUMBLE) {
+        return AcsMode::DETUMBLE;
+    } else if (src == Adaptor::SUNPOINT) {
+        return AcsMode::SUNPOINT;
+    } else if (src == Adaptor::NADIRPOINTYAW) {
+        return AcsMode::NADIRPOINTYAW;
+    } else if (src == Adaptor::SUNSPIN) {
+        return AcsMode::SUNSPIN;
+    } else if (src == Adaptor::NADIRPOINTSUN) {
+        return AcsMode::NADIRPOINTSUN;
+    } else if (src == Adaptor::SUNPOINTNADIR) {
+        return AcsMode::SUNPOINTNADIR;
+    } else if (src == Adaptor::LATLONTRACK) {
+        return AcsMode::LATLONTRACK;
+    } else if (src == Adaptor::INERTIALPOINT) {
+        return AcsMode::INERTIALPOINT;
+    } else {
+        // anything else
+        return 255;
+    }
+}
+
+}; // namespace Adaptor
 
 static double rad2deg(double a) {
     return 180.0 / M_PI * a;
@@ -143,7 +207,6 @@ static org::openapitools::server::model::Adcs_euler_t DeriveEulerAngles(
     org::openapitools::server::model::AdcsHk& oapi_hk,
     const ussp::payload::PayloadAdcsFeed& ucan_adcs) {
     org::openapitools::server::model::Adcs_euler_t value;
-    // math here
     auto q = ucan_adcs.q_bo_est;
     const double dcm_00 = pow(q.q4, 2) + pow(q.q1, 2) - pow(q.q2, 2) - pow(q.q3, 2);
     const double dcm_01 = 2.0 * (q.q1 * q.q2 + q.q3 * q.q4);
@@ -196,7 +259,6 @@ static org::openapitools::server::model::Adcs_xyz_float_t DeriveREcef(
     org::openapitools::server::model::AdcsHk& oapi_hk,
     const ussp::payload::PayloadAdcsFeed& ucan_adcs) {
     org::openapitools::server::model::Adcs_xyz_float_t ecef;
-    // math here
     const double gha = get_gha(ucan_adcs.unix_timestamp);
     ecef.setX(cos(gha) * ucan_adcs.r_eci.x + sin(gha) * ucan_adcs.r_eci.y);
     ecef.setY(-sin(gha) * ucan_adcs.r_eci.x + cos(gha) * ucan_adcs.r_eci.y);
@@ -266,21 +328,4 @@ AdcsResponse AdcsManager::getAdcs() {
     chrono::duration<double> since = chrono::system_clock::now() - m_adcs_mtime;
     m_adcs.setAge(since.count());
     return m_adcs;
-}
-
-const std::string DecodeAcsMode(const ussp::payload::AcsMode& src) {
-    using ussp::payload::AcsMode ;
-    switch (src.mode) {
-        case AcsMode::NOOP:          return "NO-OP"; break;
-        case AcsMode::BDOT:          return "BDOT"; break;
-        case AcsMode::DETUMBLE:      return "DETUMBLE"; break;
-        case AcsMode::SUNPOINT:      return "SUNPOINT"; break;
-        case AcsMode::NADIRPOINTYAW: return "NADIRPOINTYAW"; break;
-        case AcsMode::SUNSPIN:       return "SUNSPIN"; break;
-        case AcsMode::NADIRPOINTSUN: return "NADIRPOINTSUN"; break;
-        case AcsMode::SUNPOINTNADIR: return "SUNPOINTNADIR"; break;
-        case AcsMode::LATLONTRACK:   return "LATLONTRACK"; break;
-        case AcsMode::INERTIALPOINT: return "INERTIALPOINT"; break;
-        default:                     return "UNKNOWN";
-    }
 }

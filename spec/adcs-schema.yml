@@ -60,15 +60,12 @@ components:
 
     AdcsCommand:
       description: SPACS attitude control command
-      required: [command]
-      properties:
-        command:
-          type: string
-          maxLength: 5
-          enum:
-            - IDLE
-            - NADIR
-            - TRACK
+      type: string
+      maxLength: 5
+      # enum:
+        # - IDLE
+        # - NADIR
+        # - TRACK
 
     Aperture:
       description: Aperture (imager, antenna, etc) name to use in ADCS pointing requests

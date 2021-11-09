@@ -56,7 +56,7 @@ void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandRe
     auto timeout = uavcan::MonotonicDuration::fromMSec(UAVCLIENT_TIMEOUT);
 
     org::openapitools::server::model::AdcsCommandResponse uresp;
-    auto const mode = req.getCommand().getCommand();
+    auto const mode = req.getCommand();
     if (mode == "IDLE") {
         can_req.adcs_command = can_req.ADCS_COMMAND_IDLE;
     } else if (mode == "NADIR") {
@@ -70,21 +70,27 @@ void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandRe
     }
 
     // fill(can_req.aperture.begin(), can_req.aperture.end(), 0);
-    copy_n(req.getAperture().begin(),
-           min(static_cast<unsigned int>(req.getAperture().size()),
-               static_cast<unsigned int>(can_req.aperture.capacity())),
-           can_req.aperture.begin());
+    if (req.apertureIsSet()) {
+        auto ap = req.getAperture();
+        if (ap.size() > can_req.aperture.capacity()) {
+            rsp.setStatus("FAIL");
+            rsp.setReason("Invalid aperture specification");
+            return;
+        }
+        can_req.aperture = ap.c_str();
+    } else {
+        Log::debug("No aperture");
+    }
 
-    Log::debug("latlon ");
     if (req.targetIsSet()) {
         auto t = req.getTarget();
         ussp::payload::TargetT tgt;
         tgt.lat = t.getLat();
         tgt.lon = t.getLon();
+        Log::debug("latlon ?, ?", t.getLat(), t.getLon());
         can_req.target.push_back(tgt);
     }
     if (req.angleIsSet()) {
-        auto t = req.getTarget();
         can_req.angle.push_back(req.getAngle());
     }
     if (req.quatIsSet()) {
@@ -128,5 +134,14 @@ void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandRe
     }
 
     rsp.setReason(can_rsp.reason.c_str());
-    rsp.setMode(DecodeAcsMode(can_rsp.mode));
+    rsp.setMode(Adaptor::DecodeAcsMode(can_rsp.mode));
+    if (can_rsp.target.size() > 0) {
+        rsp.setTarget(Adaptor::Adapt(can_rsp.target.front()));
+    }
+    if (can_rsp.quat.size() > 0) {
+        rsp.setQuat(Adaptor::Adapt(can_rsp.quat.front()));
+    }
+    if (can_rsp.vector.size() > 0) {
+        rsp.setVector(Adaptor::Adapt(can_rsp.vector.front()));
+    }
 }

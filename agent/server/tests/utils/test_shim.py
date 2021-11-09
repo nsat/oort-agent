@@ -65,15 +65,20 @@ if __name__ == "__main__":
 
     def AdcsCommandHandler(e):
         print("adcs command")
+        print(uavcan.to_yaml(e))
         # error on any command other than IDLE
         req = AdcsCommandService.Request()
         rsp = AdcsCommandService.Response()
         if e.request.adcs_command != req._constants['ADCS_COMMAND_IDLE']:
             rsp.status = rsp._constants['STATUS_FAIL']
-            rsp.reason = "Command not supported"
+            rsp.reason = "Command not supported for {}".format(e.request.aperture)
         else:
             rsp.status = rsp._constants['STATUS_OK']
             rsp.mode.mode = rsp.mode._constants['NOOP']
+            rsp.vector.append(rsp.vector.new_item())
+            rsp.vector[0].x = 1.414
+            rsp.vector[0].y = 3.14
+            rsp.vector[0].z = 2.71828
 
         print("adcs command response")
         print(rsp)
@@ -83,8 +88,8 @@ if __name__ == "__main__":
     adcs_feeder = adcs_feed(node)
     tfrs_feeder = tfrs_feed(node)
 
-    node.periodic(1, lambda: next(adcs_feeder))
-    node.periodic(1, lambda: next(tfrs_feeder))
+    # node.periodic(1, lambda: next(adcs_feeder))
+    # node.periodic(1, lambda: next(tfrs_feeder))
     node.add_handler(AdcsCommandService, AdcsCommandHandler)
 
     node.spin()
