@@ -26,7 +26,7 @@
 #include "AgentUAVCANClient.h"
 #include "version.h"  // NOLINT
 
-static const char VERSION[] = "@(#) Release: " RELEASE_VERSION " Build: " BUILD_VERSION;
+extern const char VERSION[] = "@(#) Release: " RELEASE_VERSION " Build: " BUILD_VERSION;
 
 Onion::Onion *server = nullptr;
 
