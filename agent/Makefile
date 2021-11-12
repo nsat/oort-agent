@@ -29,6 +29,8 @@ endif
 
 SERVER_SRCS = \
 	${SERVER_BASE}/impl/version.h \
+	${SERVER_BASE}/impl/Adaptor.cpp \
+	${SERVER_BASE}/impl/Adaptor.h \
 	${SERVER_BASE}/impl/Adcs.cpp \
 	${SERVER_BASE}/impl/Adcs.h \
 	${SERVER_BASE}/impl/Agent.cpp \

@@ -155,12 +155,12 @@ void AgentUAVCANServer::serverTask() {
             });
     auto adcs_sub = node->makeSubscriber<ussp::payload::PayloadAdcsFeed>(
         [this](const uavcan::ReceivedDataStructure<ussp::payload::PayloadAdcsFeed>& msg) {
-            Log::info("ADCS ?", msg.unix_timestamp);
+            Log::info("Received ADCS broadcast for time ?", msg.unix_timestamp);
             m_mgr.setAdcs(msg);
         });
     auto tfrs_sub = node->makeSubscriber<ussp::tfrs::ReceiverNavigationState>(
         [this](const uavcan::ReceivedDataStructure<ussp::tfrs::ReceiverNavigationState>& msg) {
-            Log::info("TFRS ?", msg.utc_time);
+            Log::debug("Received TFRS broadcast for time ?", msg.utc_time);
             m_mgr.setTfrs(msg);
         });
 

@@ -30,7 +30,7 @@ class AgentUAVCANClient {
     uavcan_linux::NodePtr node;
 
     void initNode();
-    uavcan_linux::BlockingServiceClientPtr<ussp::payload::PayloadAdcsCommand> adcsset_client;
+    uavcan_linux::BlockingServiceClientPtr<ussp::payload::PayloadAdcsCommand> adcscommand_client;
 
  public:
     AgentUAVCANClient(AgentConfig& config);
