@@ -40,7 +40,7 @@ paths:
       tags:
         - sdk
       description: request adcs operation
-      operationId: set_adcs
+      operationId: command_adcs
       requestBody:
         description: The file and parameters for sending
         required: true
