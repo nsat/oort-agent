@@ -216,6 +216,10 @@ test: ${BUILD}/oort-server
 unittest: ${BUILD}/${SERVER_BASE}/test_agent
 	${BUILD}/${SERVER_BASE}/test_agent ${TESTS}
 
+## run-it - docker-compose integration test
+run-it: $(BUILD)/oort-server
+	UID=$$(id -u) GID=$$(id -g) docker-compose -f ../mocking/docker-compose.yml up
+
 ## run - start up oort-server locally
 run: ${BUILD}/oort-server
 	mkdir /tmp/workdir.1 || true
