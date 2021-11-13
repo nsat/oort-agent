@@ -2,8 +2,12 @@ import time
 import uavcan
 import predict
 import logging
+import signal
+import math
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO)
+
+log = logging.getLogger(__name__)
 
 if __name__ == "__main__":
 
@@ -11,6 +15,11 @@ if __name__ == "__main__":
     tle = '''LEMUR-2-NOOBNOOB        
 1 47538U 21006DY  21305.61575955  .00004814  00000-0  27164-3 0  9990
 2 47538  97.4809   4.5190 0010822 358.0760   2.0428 15.13575263 42793'''
+
+    # FM102
+    tle = '''0 LEMUR 2 VICTOR-ANDREW
+1 44087U 19018K   21316.40927568  .00006438  00000-0  23916-3 0  9991
+2 44087  97.3488  16.2685 0012746 155.5993 204.5852 15.27821745145603'''
 
     # some random geostationary satellite
     # tle='''NILESAT 201             
@@ -25,7 +34,14 @@ if __name__ == "__main__":
     TfrsFeedPublisher = uavcan.thirdparty.ussp.tfrs.ReceiverNavigationState
     AdcsFeedPublisher = uavcan.thirdparty.ussp.payload.PayloadAdcsFeed
     AdcsCommandService = uavcan.thirdparty.ussp.payload.PayloadAdcsCommand
-    # AcsMode = uavcan.thirdparty.ussp.payload.AcsMode
+    AcsMode = uavcan.thirdparty.ussp.payload.AcsMode
+
+    # this is complete fantasy
+    acs_constants = {c.name: c.value for c in AcsMode.constants}
+    pointing_status = {
+        "mode": AcsMode(mode=acs_constants['NOOP']),
+        "error": 0,
+    }
 
     def adcs_feed(node):
         msg = AdcsFeedPublisher()
@@ -40,7 +56,16 @@ if __name__ == "__main__":
             msg.v_eci.x = result["eci_vx"]*1000
             msg.v_eci.y = result["eci_vy"]*1000
             msg.v_eci.z = result["eci_vz"]*1000
-            # print("adcs broadcast")
+            msg.acs_mode_active = pointing_status['mode']
+            # whee
+            if pointing_status['mode'].mode != acs_constants['NOOP']:
+                log.info("adjusting pointing error to %s", pointing_status['error'])
+                pointing_status['error'] -= min(pointing_status['error'] / 2.0, 3)
+                pointing_status['error'] = abs(pointing_status['error'])
+            msg.control_error_q.q1 = 0
+            msg.control_error_q.q2 = 0
+            msg.control_error_q.q3 = 0
+            msg.control_error_q.q4 = math.cos(pointing_status['error'] / 2 / 180 * math.pi)
             node.broadcast(msg)
             yield
 
@@ -64,32 +89,45 @@ if __name__ == "__main__":
             yield
 
     def AdcsCommandHandler(e):
-        print("adcs command")
-        print(uavcan.to_yaml(e))
+        log.info("adcs command: %s", uavcan.to_yaml(e))
         # error on any command other than IDLE
         req = AdcsCommandService.Request()
         rsp = AdcsCommandService.Response()
-        if e.request.adcs_command != req._constants['ADCS_COMMAND_IDLE']:
-            rsp.status = rsp._constants['STATUS_FAIL']
-            rsp.reason = "Command not supported for {}".format(e.request.aperture)
-        else:
+        if e.request.adcs_command == req._constants['ADCS_COMMAND_IDLE']:
             rsp.status = rsp._constants['STATUS_OK']
-            rsp.mode.mode = rsp.mode._constants['NOOP']
-            rsp.vector.append(rsp.vector.new_item())
-            rsp.vector[0].x = 1.414
-            rsp.vector[0].y = 3.14
-            rsp.vector[0].z = 2.71828
+            pointing_status["mode"] = AcsMode(mode=acs_constants['NOOP'])
+        elif e.request.adcs_command == req._constants['ADCS_COMMAND_NADIR']:
+            if e.request.aperture == "GOPRO":
+                rsp.status = rsp._constants['STATUS_OK']
+                pointing_status["mode"] = AcsMode(mode=acs_constants['NADIRPOINTYAW'])
+                rsp.mode = pointing_status["mode"]
+                pointing_status["error"] = 25.3
+            else:
+                rsp.status = rsp._constants['STATUS_FAIL']
+                rsp.reason = "NADIR pointing not supported for " + e.request.aperture
+        elif e.request.adcs_command == req._constants['ADCS_COMMAND_TRACK']:
+            rsp.status = rsp._constants['STATUS_FAIL']
+            rsp.reason = "Target tracking not supported"
+        else:
+            rsp.status = rsp._constants['STATUS_FAIL']
+            rsp.reason = "Can't happen"
 
-        print("adcs command response")
-        print(rsp)
+        log.info("adcs command response %s", rsp)
         return rsp
 
 
     adcs_feeder = adcs_feed(node)
     tfrs_feeder = tfrs_feed(node)
 
-    # node.periodic(1, lambda: next(adcs_feeder))
-    # node.periodic(1, lambda: next(tfrs_feeder))
+    node.periodic(1, lambda: next(adcs_feeder))
+    node.periodic(1, lambda: next(tfrs_feeder))
     node.add_handler(AdcsCommandService, AdcsCommandHandler)
+
+    def die(sig, info):
+        print("I am terminated!")
+        exit(1)
+
+    signal.signal(signal.SIGINT, die)
+    signal.signal(signal.SIGTERM, die)
 
     node.spin()
