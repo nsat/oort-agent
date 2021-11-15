@@ -33,7 +33,7 @@ class AgentUAVCANClient {
     uavcan_linux::BlockingServiceClientPtr<ussp::payload::PayloadAdcsCommand> adcscommand_client;
 
  public:
-    AgentUAVCANClient(AgentConfig& config);
+    explicit AgentUAVCANClient(AgentConfig& config);
 
     void AdcsCommand(const org::openapitools::server::model::AdcsCommandRequest& req,
                      org::openapitools::server::model::AdcsCommandResponse& rsp);

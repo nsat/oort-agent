@@ -67,6 +67,7 @@ TEST_SRCS= \
 	${SERVER_BASE}/main-api-server-test.cpp \
 	${SERVER_BASE}/tests/Utils_test.cpp \
 	${SERVER_BASE}/tests/Log_test.cpp \
+	${SERVER_BASE}/tests/Adaptor_test.cpp \
 	${SERVER_BASE}/tests/Adcs_test.cpp \
 	${SERVER_BASE}/tests/Agent_test.cpp \
 	${SERVER_BASE}/tests/Healthcheck_test.cpp \

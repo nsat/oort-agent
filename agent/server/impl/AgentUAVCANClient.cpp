@@ -56,7 +56,7 @@ void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandRe
     }
 
     can_stat = adcscommand_client->blockingCall(config.getShimNodeID(), can_req, timeout);
-    if (can_stat <= 0 || !adcscommand_client->wasSuccessful()) {  
+    if (can_stat <= 0 || !adcscommand_client->wasSuccessful()) {
         // call failed
         Log::error("Failed contacting UAVCAN PayloadAdcsCommand service: ?", can_stat);
         rsp.setStatus("FAIL");
@@ -64,6 +64,6 @@ void AgentUAVCANClient::AdcsCommand(const AdcsCommandRequest& req, AdcsCommandRe
         return;
     }
     ussp::payload::PayloadAdcsCommand::Response can_rsp = adcscommand_client->getResponse();
-    
+
     rsp = Adapt(can_rsp);
 }
