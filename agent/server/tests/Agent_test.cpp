@@ -9,6 +9,7 @@
 
 using namespace std;
 using Catch::Matchers::StartsWith;
+using Catch::Matchers::Contains;
 
 TEST_CASE("setup, send -> [fake collect/transfer/deliver] -> query -> retrieve",
           "[agent][api]") {
@@ -269,5 +270,87 @@ TEST_CASE("setup, send -> [fake collect/transfer/deliver] -> query -> retrieve",
         rmdir(si.getAgentUpgrades().c_str());
         rmdir(si.getWorkdir().c_str());
         rmdir(dtmp);
+    }
+}
+
+TEST_CASE("adcs/tfrs get", "[!hide][adcs-integration]") {
+    stringstream dummy_out;
+    Log::setLevel(Log::Info);
+    Log::setOut(dummy_out);
+
+    AgentConfig cfg;
+    char *argv[] = {strdup("UNITTEST"),
+        strdup("-w"), NULL,
+        strdup("-c"), strdup("can0"),
+        strdup("-n"), strdup("12"),
+        strdup("-N"), strdup("51")
+    };
+    int argc = (sizeof(argv) / sizeof(argv[0]));
+
+    char worktmpl[] = "/tmp/unittest_agentXXXXXX";
+    char *dtmp = mkdtemp(worktmpl);
+    argv[2] = dtmp;
+
+    AdcsManager mgr;
+
+    REQUIRE(cfg.parseOptions(argc, argv) == true);
+    Agent a(cfg);
+
+    SECTION("tfrs get disabled") {
+      auto resp = a.tfrs_get();
+      REQUIRE(resp.code == Code::Bad_Request);
+      REQUIRE_THAT(resp.err.getMessage(), Contains("unavailable"));
+    }
+    SECTION("adcs get disabled") {
+      auto resp = a.adcs_get();
+      REQUIRE(resp.code == Code::Bad_Request);
+      REQUIRE_THAT(resp.err.getMessage(), Contains("unavailable"));
+    }
+    a.setAdcsMgr(&mgr);
+
+    SECTION("tfrs get ok") {
+      auto resp = a.tfrs_get();
+      REQUIRE(resp.code == Code::Ok);
+    }
+    SECTION("adcs get ok") {
+      auto resp = a.adcs_get();
+      REQUIRE(resp.code == Code::Ok);
+    }
+
+    SECTION("adcs command disabled") {
+      auto cmd = AdcsCommandRequest();
+      auto resp = a.adcs_command(cmd);
+      REQUIRE(resp.code == Code::Bad_Request);
+      REQUIRE_THAT(resp.err.getMessage(), Contains("unavailable"));
+    }
+
+    auto can_client = new AgentUAVCANClient(cfg);
+    a.setUavClient(can_client);
+
+    SECTION("adcs command enabled") {
+      auto cmd = AdcsCommandRequest();
+      SECTION("bad command") {
+        cmd.setCommand("oops");
+        auto resp = a.adcs_command(cmd);
+        INFO(resp.err.getMessage());
+        INFO(resp.result.getReason());
+        INFO(cmd.getCommand());
+        REQUIRE(resp.code == Code::Bad_Request);
+        REQUIRE_THAT(resp.result.getReason(), StartsWith("Cannot translate"));
+      }
+      cmd.setCommand("NADIR");
+      SECTION("bad aperture") {
+        cmd.setAperture("012345678910...15...20...X");
+        auto resp = a.adcs_command(cmd);
+        INFO(resp.err.getMessage());
+        INFO(resp.result.getReason());
+        REQUIRE(resp.code == Code::Bad_Request);
+        REQUIRE_THAT(resp.result.getReason(), StartsWith("Invalid aperture"));
+      }
+      cmd.setAperture("GOPRO");
+      auto resp = a.adcs_command(cmd);
+      INFO(resp.err.getMessage());
+      INFO(resp.result.getReason());
+      REQUIRE(resp.code == Code::Ok);
     }
 }

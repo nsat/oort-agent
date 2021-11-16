@@ -2,7 +2,7 @@
 
 #include "Adaptor.h"
 
-TEST_CASE("AcsMode UAV -> OAPI", "[adaptor][u2o]") {
+TEST_CASE("Adapt AcsMode UAV -> OAPI", "[adaptor][u2o]") {
     // const std::string DecodeAcsMode(const ussp::payload::AcsMode& mode);
     ussp::payload::AcsMode m;
     m.mode = ussp::payload::AcsMode::BDOT;
@@ -16,7 +16,7 @@ TEST_CASE("AcsMode UAV -> OAPI", "[adaptor][u2o]") {
     }
 }
 
-TEST_CASE("QuatT UAV -> OAPI", "[adaptor][u2o]") {
+TEST_CASE("Adapt QuatT UAV -> OAPI", "[adaptor][u2o]") {
     // const org::openapitools::server::model::Adcs_quat_t Adapt(const ussp::payload::QuatT& src);
     ussp::payload::QuatT q;
     q.q1 = 1.0;
@@ -30,7 +30,7 @@ TEST_CASE("QuatT UAV -> OAPI", "[adaptor][u2o]") {
     REQUIRE(oq.getQ4() == 4.0);
 }
 
-TEST_CASE("XyzFloat (vector) UAV -> OAPI", "[adaptor][u2o]") {
+TEST_CASE("Adapt XyzFloat (vector) UAV -> OAPI", "[adaptor][u2o]") {
     // const org::openapitools::server::model::Adcs_xyz_float_t Adapt(const ussp::payload::XyzFloatT& src);
     ussp::payload::XyzFloatT v;
     v.x = 1.0;
@@ -42,7 +42,7 @@ TEST_CASE("XyzFloat (vector) UAV -> OAPI", "[adaptor][u2o]") {
     REQUIRE(ov.getZ() == 3.0);
 }
 
-TEST_CASE("Target UAV -> OAPI", "[adaptor][u2o]") {
+TEST_CASE("Adapt Target UAV -> OAPI", "[adaptor][u2o]") {
     // const org::openapitools::server::model::AdcsTarget Adapt(const ussp::payload::TargetT& src);
     ussp::payload::TargetT t;
     t.lat = 3.5;
@@ -52,7 +52,7 @@ TEST_CASE("Target UAV -> OAPI", "[adaptor][u2o]") {
     REQUIRE(ot.getLon() == 2.25);
 }
 
-TEST_CASE("CommandResponse UAV -> OAPI", "[adaptor][u2o]") {
+TEST_CASE("Adapt CommandResponse UAV -> OAPI", "[adaptor][u2o]") {
     // const org::openapitools::server::model::AdcsCommandResponse
     //      Adapt(const ussp::payload::PayloadAdcsCommand::Response& src);
     ussp::payload::PayloadAdcsCommand::Response r;
@@ -113,14 +113,14 @@ TEST_CASE("CommandResponse UAV -> OAPI", "[adaptor][u2o]") {
     }
 };
 
-TEST_CASE("mode OAPI -> UAV", "[adaptor][o2u]") {
+TEST_CASE("Adapt mode OAPI -> UAV", "[adaptor][o2u]") {
     // const uint8_t EncodeAcsMode(const std::string& mode);
     std::string om = Adaptor::AcsMode::NOOP;
     uint8_t um = EncodeAcsMode(om);
     REQUIRE(um == ussp::payload::AcsMode::NOOP);
 }
 
-TEST_CASE("quat OAPI -> UAV", "[adaptor][o2u]") {
+TEST_CASE("Adapt quat OAPI -> UAV", "[adaptor][o2u]") {
     // const ussp::payload::QuatT Adapt(const org::openapitools::server::model::Adcs_quat_t& src); 
     org::openapitools::server::model::Adcs_quat_t oq;
     oq.setQ1(0);
@@ -134,7 +134,7 @@ TEST_CASE("quat OAPI -> UAV", "[adaptor][o2u]") {
     REQUIRE(uq.q4 == 3);
 }
 
-TEST_CASE("xyzfloat (vector) OAPI -> UAV", "[adaptor][o2u]") {
+TEST_CASE("Adapt xyzfloat (vector) OAPI -> UAV", "[adaptor][o2u]") {
     // const ussp::payload::XyzFloatT Adapt(const org::openapitools::server::model::Adcs_xyz_float_t& src);
     org::openapitools::server::model::Adcs_xyz_float_t ov;
     ov.setX(5);
@@ -146,7 +146,7 @@ TEST_CASE("xyzfloat (vector) OAPI -> UAV", "[adaptor][o2u]") {
     REQUIRE(uv.z == 7);
 }
     
-TEST_CASE("target OAPI -> UAV", "[adaptor][o2u]") {
+TEST_CASE("Adapt target OAPI -> UAV", "[adaptor][o2u]") {
     // const ussp::payload::TargetT Adapt(const org::openapitools::server::model::AdcsTarget& src);
     org::openapitools::server::model::AdcsTarget ot;
     ot.setLat(3.5);
@@ -156,12 +156,32 @@ TEST_CASE("target OAPI -> UAV", "[adaptor][o2u]") {
     REQUIRE(ut.lon == 2.25);
 }
     
-TEST_CASE("CommandRequest OAPI -> UAV", "[adaptor][o2u]") {
+TEST_CASE("Adapt CommandRequest OAPI -> UAV", "[adaptor][o2u]") {
     // const ussp::payload::PayloadAdcsCommand::Request 
     //      Adapt(const org::openapitools::server::model::AdcsCommandRequest& src);
     org::openapitools::server::model::AdcsCommandRequest oreq;
+
     oreq.setCommand(Adaptor::AdcsCommand::NADIR);
     oreq.setAperture("GOPRO");
+
+    SECTION("command check") {
+        oreq.setCommand(Adaptor::AdcsCommand::NADIR);
+        REQUIRE_NOTHROW(Adapt(oreq));
+        oreq.setCommand(Adaptor::AdcsCommand::TRACK);
+        REQUIRE_NOTHROW(Adapt(oreq));
+        oreq.setCommand(Adaptor::AdcsCommand::IDLE);
+        REQUIRE_NOTHROW(Adapt(oreq));
+        oreq.setCommand("OTHER COMMAND");
+        REQUIRE_THROWS(Adapt(oreq));
+    }
+
+    SECTION("length check") {
+        // max length = 25
+        oreq.setAperture("Short enough name no thro");
+        REQUIRE_NOTHROW(Adapt(oreq));
+        oreq.setAperture("Too long a name so throws.");
+        REQUIRE_THROWS(Adapt(oreq));
+    }
 
     SECTION("base") {
         ussp::payload::PayloadAdcsCommand::Request ureq = Adapt(oreq);
@@ -172,6 +192,7 @@ TEST_CASE("CommandRequest OAPI -> UAV", "[adaptor][o2u]") {
         REQUIRE(ureq.quat.size() == 0);
         REQUIRE(ureq.vector.size() == 0);
     }
+
     SECTION("angle") {
         oreq.setAngle(13.5);
         ussp::payload::PayloadAdcsCommand::Request ureq = Adapt(oreq);
@@ -216,28 +237,28 @@ TEST_CASE("CommandRequest OAPI -> UAV", "[adaptor][o2u]") {
     }
 }
 
-TEST_CASE("double generic", "[adaptor][generic]") {
+TEST_CASE("Adapt double", "[adaptor][generic]") {
     // const double Adapt(const double src);
     double s = 3.14159;
     double t = Adapt(s);
     REQUIRE(t == 3.14159);
 }
 
-TEST_CASE("float generic", "[adaptor][generic]") {
+TEST_CASE("Adapt float", "[adaptor][generic]") {
     // const float Adapt(const float src);
     float s = 1.5 ;
     float t = Adapt(s);
     REQUIRE(t == 1.5 );
 }
 
-TEST_CASE("int generic", "[adaptor][generic]") {
+TEST_CASE("Adapt int", "[adaptor][generic]") {
     // const int Adapt(const int src);
     int s = 42;
     int t = Adapt(s);
     REQUIRE (t == 42);
 }
 
-TEST_CASE("uint generic", "[adaptor][generic]") {
+TEST_CASE("Adapt uint", "[adaptor][generic]") {
     // const unsigned int Adapt(const unsigned int src);
     unsigned int s = 99;
     unsigned int t = Adapt(s);
