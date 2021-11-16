@@ -31,6 +31,7 @@ task-error-handling: &task-error-handling
     put: pull-request
     params:
       path: pull-request
+      description: automated checks failed
       status: failure
   on_error:
     put: pull-request
@@ -49,24 +50,26 @@ jobs:
           trigger: true
           params:
             list_changed_files: true
-        - task: version-check
-          image: dind-base
-          config:
-            platform: linux
-            container_limits: {}
-            inputs:
-              - name: pull-request
-            run:
-              path: /bin/grep
-              args:
-                - VERSION
-                - pull-request/.git/resource/changed_files
-          on_failure:
-            put: pull-request
-            params:
-              path: pull-request
-              status: failure
-              description: VERSION file not included in pull-request
+        - try:
+            task: version-check
+            image: dind-base
+            config:
+              platform: linux
+              container_limits: {}
+              inputs:
+                - name: pull-request
+              run:
+                path: /bin/grep
+                args:
+                  - VERSION
+                  - pull-request/.git/resource/changed_files
+            on_failure:
+              put: pull-request
+              params:
+                path: pull-request
+                comment: >
+                  NOTE: VERSION file not included in pull-request -- a new
+                  release will *not* be built
         - task: tag-check
           image: dind-base
           config:
@@ -79,13 +82,14 @@ jobs:
               dir: pull-request
               args:
                 - -c
-                - "! git show --oneline -s refs/tags/v`cat VERSION`"
+                - "! grep VERSION .git/resource/changed_files || git show --oneline -s refs/tags/v`cat VERSION`"
           on_failure:
             put: pull-request
             params:
               path: pull-request
-              status: failure
-              description: tag for version already exists
+              status: FAILURE
+              description: no matching tag for version
+              comment: A new release version must have a corresponding tag
         - task: lint
           privileged: true
           image: dind-base

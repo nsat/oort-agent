@@ -6,6 +6,7 @@ resources:
       password: ((github.oort_red_personal_access_token))
       uri: https://github.com/nsat/oort-ta-dev
       branch: master
+      path: VERSION
 
   - name: agent-x86
     type: s3
@@ -75,10 +76,35 @@ resources:
       aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
 
 jobs:
-  - name: build-agent-x86
+  - name: tag-check
     plan:
       - get: repository
         trigger: true
+      - get: dind-base
+        params: {save: true}
+      - task: tag-check
+        image: dind-base
+        config:
+          platform: linux
+          container_limits: {}
+          inputs:
+            - name: repository
+          run:
+            path: /bin/bash
+            dir: repository
+            args:
+              - -c
+              - >
+                test `git describe --tags` = v`cat VERSION` || 
+                (echo ERROR: git tag does not match VERSION file ;
+                 echo tag is `git describe --tags` ;
+                 echo VERSION file is `cat VERSION` ;
+                 false)
+
+  - name: build-agent-x86
+    plan:
+      - get: repository
+        passed: [tag-check]
       - get: dind-base
         params: {save: true}
       - task: build
@@ -108,7 +134,7 @@ jobs:
   - name: build-agent-armv7a
     plan:
       - get: repository
-        trigger: true
+        passed: [tag-check]
       - get: dind-base
         params: {save: true}
       - get: sdk-docker-armv7a
@@ -146,7 +172,7 @@ jobs:
   - name: build-agent-cortexa9
     plan:
       - get: repository
-        trigger: true
+        passed: [tag-check]
       - get: dind-base
         params: {save: true}
       - get: sdk-docker-cortexa9
@@ -184,7 +210,7 @@ jobs:
   - name: build-agent-armv8
     plan:
       - get: repository
-        trigger: true
+        passed: [tag-check]
       - get: dind-base
         params: {save: true}
       - get: sdk-docker-armv8
