@@ -217,9 +217,15 @@ test: ${BUILD}/oort-server
 unittest: ${BUILD}/${SERVER_BASE}/test_agent
 	${BUILD}/${SERVER_BASE}/test_agent ${TESTS}
 
+unittest-it: TESTS ?= '[adcs-integration]'
+unittest-it: ${BUILD}/${SERVER_BASE}/test_agent
+	UID=$$(id -u) GID=$$(id -g) TESTS=${TESTS} docker-compose -f ../mocking/docker-compose.yml run unittest
+	UID=$$(id -u) GID=$$(id -g) docker-compose -f ../mocking/docker-compose.yml down
+
+
 ## run-it - docker-compose integration test
 run-it: $(BUILD)/oort-server
-	UID=$$(id -u) GID=$$(id -g) docker-compose -f ../mocking/docker-compose.yml up
+	UID=$$(id -u) GID=$$(id -g) docker-compose -f ../mocking/docker-compose.yml up oort-agent
 
 ## run - start up oort-server locally
 run: ${BUILD}/oort-server

@@ -1,5 +1,16 @@
 version: '2.3'
 services:
+  shim-mock:
+    user: "${UID}:${GID}"
+    container_name: shoortit
+    build:
+      context: ../mocking
+    volumes:
+      - $PWD:/oort
+    working_dir: /oort/server
+    network_mode: host
+    command: python3 tests/utils/test_shim.py 5
+
   oort-agent:
     user: "${UID}:${GID}"
     container_name: oortit
@@ -10,15 +21,21 @@ services:
     working_dir: /oort
     network_mode: host
     ports: [2005]
+    depends_on: [shim-mock]
     command: build/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12 -N 51
 
-  shim-mock:
+  unittest:
     user: "${UID}:${GID}"
-    container_name: shoortit
+    container_name: oortunit
     build:
       context: ../mocking
     volumes:
       - $PWD:/oort
-    working_dir: /oort/server
+    working_dir: /oort
     network_mode: host
-    command: python3 tests/utils/test_shim.py
+    ports: [2005]
+    depends_on: [shim-mock]
+    environment: 
+      - TESTS=""
+      - LD_LIBRARY_PATH=/oort/build/external/lib
+    command: sh -c "sleep 1 && build/server/test_agent ${TESTS}"

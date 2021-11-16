@@ -4,12 +4,18 @@ import predict
 import logging
 import signal
 import math
+import sys
 
 logging.basicConfig(level=logging.INFO)
 
 log = logging.getLogger(__name__)
 
 if __name__ == "__main__":
+
+    if len(sys.argv) > 1:
+        rate = float(sys.argv[1])
+    else:
+        rate = 1
 
     # FM146
     tle = '''LEMUR-2-NOOBNOOB        
@@ -119,8 +125,8 @@ if __name__ == "__main__":
     adcs_feeder = adcs_feed(node)
     tfrs_feeder = tfrs_feed(node)
 
-    node.periodic(1, lambda: next(adcs_feeder))
-    node.periodic(1, lambda: next(tfrs_feeder))
+    node.periodic(rate, lambda: next(adcs_feeder))
+    node.periodic(rate, lambda: next(tfrs_feeder))
     node.add_handler(AdcsCommandService, AdcsCommandHandler)
 
     def die(sig, info):
