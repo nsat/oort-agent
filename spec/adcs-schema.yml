@@ -95,7 +95,7 @@ components:
           type: string
           description: The current ADCS mode
         age:
-          type: integer
+          type: number
           description: Time in seconds since last live reading from ACDS
         controller:
           type: string

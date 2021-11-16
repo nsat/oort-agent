@@ -104,6 +104,12 @@ TEST_CASE("ECEF math", "[adcs]") {
     CHECK_THAT( result.getHk().getEulerAngles().getPitch(), WithinRel(cases.pitch));
     CHECK_THAT( result.getHk().getEulerAngles().getRoll(), WithinRel(cases.roll));
     CHECK_THAT( result.getHk().getEulerAngles().getYaw(), WithinRel(cases.yaw));
+    
+    SECTION("ADCS cache") {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        auto result2 = mgr.getAdcs();
+        REQUIRE( result.getAge() < result2.getAge());
+    }
 }
 
 TEST_CASE("TFRS cache", "[adcs]") {

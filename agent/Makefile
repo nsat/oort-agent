@@ -153,7 +153,7 @@ ${BUILD}/%.bpl: ${SPEC_DIR}/%.yml | dirs
 	@touch -c -d@0 $(OVERLAY_FILES)
 	touch $@
 
-# ${BUILD}/oort-sdk-api.bpl: ${SPEC_DIR}/adcs-schema.yml ${SPEC_DIR}/adcs-hk.yml
+${BUILD}/oort-sdk-api.bpl: ${SPEC_DIR}/adcs-schema.yml ${SPEC_DIR}/adcs-hk.yml
 
 ${BUILD}/oort-sdk-api: ${BUILD}/oort-sdk-api.bpl 
 	touch $@ 
@@ -210,22 +210,27 @@ full: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 		$(MAKE) ${LP_EXTRA}
 	cp ${BUILD}/${SERVER_BASE}/api-server ${BUILD}/oort-server
 
-## test - run unit tests
+## test - run unit tests wrapper
 test: ${BUILD}/oort-server
 	bash tests/test-api-server.sh
 
+## unittest - just unit tests.  TESTS passed to test program
 unittest: ${BUILD}/${SERVER_BASE}/test_agent
 	${BUILD}/${SERVER_BASE}/test_agent ${TESTS}
 
+COMPOSE_FILE = ../mocking/docker-compose.yml
+
+## unittest-it - docker-compose integration test.  TESTS passed to test program
 unittest-it: TESTS ?= '[adcs-integration]'
 unittest-it: ${BUILD}/${SERVER_BASE}/test_agent
-	UID=$$(id -u) GID=$$(id -g) TESTS=${TESTS} docker-compose -f ../mocking/docker-compose.yml run unittest
-	UID=$$(id -u) GID=$$(id -g) docker-compose -f ../mocking/docker-compose.yml down
-
+	trap 'docker-compose -f ${COMPOSE_FILE} down' 0 ;\
+	export TESTS=${TESTS} UID GID=$$(id -g); \
+	docker-compose -f ${COMPOSE_FILE} run unittest
 
 ## run-it - docker-compose integration test
 run-it: $(BUILD)/oort-server
-	UID=$$(id -u) GID=$$(id -g) docker-compose -f ../mocking/docker-compose.yml up oort-agent
+	export UID GID=$$(id -g); \
+	docker-compose -f ${COMPOSE_FILE} up oort-agent
 
 ## run - start up oort-server locally
 run: ${BUILD}/oort-server

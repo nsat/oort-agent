@@ -191,6 +191,7 @@ void AdcsManager::setAdcs(const ussp::payload::PayloadAdcsFeed& adcs) {
     convert(hk, adcs);
     m_adcs.setMode(hk.getAcsModeActive());
     m_adcs.setHk(hk);
+    m_adcs.setAge(0);
     m_adcs_mtime = chrono::system_clock::now();
 }
 
