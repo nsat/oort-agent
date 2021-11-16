@@ -24,6 +24,7 @@
 #include <utility>
 #include <vector>
 
+#include "Adaptor.h"
 #include "Files.h"
 #include "Log.h"
 #include "Utils.h"
@@ -330,8 +331,12 @@ ResponseCode<AdcsCommandResponse> Agent::adcs_command(const AdcsCommandRequest &
         resp.err.setMessage("Adcs interface is unavailable");
         return resp;
     }
-    resp.code = Code::Ok;
     uavcan_client->AdcsCommand(req, resp.result);
+    if (resp.result.getStatus() == Adaptor::Status::OK) {
+        resp.code = Code::Ok;
+    } else {
+        resp.code = Code::Bad_Request;
+    }
     return resp;
 }
 
