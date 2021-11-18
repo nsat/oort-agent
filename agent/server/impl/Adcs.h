@@ -10,10 +10,7 @@
 #include <chrono>  // NOLINT(build/c++11)
 
 #include <ussp/payload/PayloadAdcsFeed.hpp>
-// #include <ussp/payload/PayloadAdcsCommand.hpp>
 #include <ussp/tfrs/ReceiverNavigationState.hpp>
-// #include "AdcsCommandResponse.h"
-// #include "AdcsCommandRequest.h"
 #include "AdcsResponse.h"
 #include "TfrsResponse.h"
 
