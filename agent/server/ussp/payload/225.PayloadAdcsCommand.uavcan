@@ -1,0 +1,42 @@
+# Refer to TP466 for details on fields
+
+uint8 adcs_command
+# enum specifying adcs command
+uint8 ADCS_COMMAND_IDLE = 0
+uint8 ADCS_COMMAND_NADIR = 1
+uint8 ADCS_COMMAND_TRACK = 2
+
+uint8[<=25] aperture
+# named aperture to center the operation on
+
+TargetT[<=1] target
+# target for TRACK command
+
+float32[<=1] angle
+# adcs_comand specific angle
+
+QuatT[<=1] quat
+# adcs_comand specific quaternion
+
+XyzFloatT[<=1] vector
+# adcs_comand specific vector
+---
+uint8 status
+# status of request
+uint8 STATUS_OK = 0
+uint8 STATUS_FAIL = 1
+
+uint8[<255] reason
+# reason for failure
+
+AcsMode mode
+# real commanded ADCS mode
+
+TargetT[<=1] target
+# feedback target used
+
+QuatT[<=1] quat
+# feedback adcs_comand specific quaternion
+
+XyzFloatT[<=1] vector
+# feedback adcs_comand specific vector
