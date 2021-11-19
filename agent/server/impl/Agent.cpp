@@ -336,6 +336,7 @@ ResponseCode<AdcsCommandResponse> Agent::adcs_command(const AdcsCommandRequest &
         resp.code = Code::Ok;
     } else {
         resp.code = Code::Bad_Request;
+        resp.err.setMessage(resp.result.getReason());
     }
     return resp;
 }

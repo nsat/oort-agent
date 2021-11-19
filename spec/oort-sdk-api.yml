@@ -60,7 +60,7 @@ paths:
           content:
             "application/json":
               schema:
-                "$ref": "adcs-schema.yml#/components/schemas/AdcsCommandResponse"
+                "$ref": "#/components/schemas/ErrorResponse"
 
   /send_file:
     description: Send a file to a destination

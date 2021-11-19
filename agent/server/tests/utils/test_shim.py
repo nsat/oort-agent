@@ -110,7 +110,7 @@ if __name__ == "__main__":
                 pointing_status["error"] = 25.3
             else:
                 rsp.status = rsp._constants['STATUS_FAIL']
-                rsp.reason = "NADIR pointing not supported for " + e.request.aperture
+                rsp.reason = "NADIR pointing not supported for {}".format(e.request.aperture)
         elif e.request.adcs_command == req._constants['ADCS_COMMAND_TRACK']:
             rsp.status = rsp._constants['STATUS_FAIL']
             rsp.reason = "Target tracking not supported"
