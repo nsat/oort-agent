@@ -1,0 +1,176 @@
+openapi: '3.0.3'
+info: 
+  title: ADCS data structures
+  version: '1.0'
+
+paths:  {}
+
+components:
+  schemas:
+
+    Adcs_xyz_int16_t:
+      description: ADCS int x,y,z type
+      type: object
+      required: [x, y, z]
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        z:
+          type: number
+
+    Adcs_xyz_float_t:
+      description: ADCS float x,y,z type
+      type: object
+      required: [x, y, z]
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        z:
+          type: number
+
+    Adcs_euler_t:
+      description: ADCS Euler angles -- roll, pitch, yaw
+      type: object
+      required: [roll, pitch, yaw]
+      properties:
+        roll:
+          type: number
+        pitch:
+          type: number
+        yaw:
+          type: number
+
+    Adcs_quat_t:
+      description: ADCS QBO type
+      type: object
+      required: [q1, q2, q3, q4]
+      properties:
+        q1:
+          type: number
+        q2:
+          type: number
+        q3:
+          type: number
+        q4:
+          type: number
+
+    AdcsCommand:
+      description: SPACS attitude control command
+      type: string
+      maxLength: 5
+      # enum:
+        # - IDLE
+        # - NADIR
+        # - TRACK
+
+    Aperture:
+      description: Aperture (imager, antenna, etc) name to use in ADCS pointing requests
+      type: string
+      maxLength: 24
+
+    AdcsTarget:
+      description: A ground location for the satellite to point at
+      type: object
+      required: [lat, lon]
+      properties:
+        lat:
+          type: number
+          description: latitide in degrees
+        lon:
+          type: number
+          description: longitude in degrees
+
+    AdcsResponse:
+      description: ADCS Orientation and status
+      type: object
+      required:
+        - mode
+        - age
+      properties:
+        mode:
+          type: string
+          description: The current ADCS mode
+        age:
+          type: number
+          description: Time in seconds since last live reading from ACDS
+        controller:
+          type: string
+          description: the controlling payload at the time of the last live reading
+        hk:
+          "$ref": "adcs-hk.yml#/components/schemas/AdcsHk"
+
+    AdcsCommandRequest:
+      description: Request to set ADCS mode and parameters
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          "$ref": "#/components/schemas/AdcsCommand"
+        aperture:
+          "$ref": "#/components/schemas/Aperture"
+        target:
+          "$ref": "#/components/schemas/AdcsTarget"
+        angle:
+          type: number
+        vector:
+          "$ref": "#/components/schemas/Adcs_xyz_float_t"
+        quat:
+          "$ref": "#/components/schemas/Adcs_quat_t"
+          
+    AdcsCommandResponse:
+      description: Response to ADCS command request
+      type: object
+      required:
+        - status
+        - mode
+      properties:
+        status:
+          type: string
+          enum: [OK, FAIL]
+        reason:
+          type: string
+        mode:
+          type: string
+        target:
+          "$ref": "#/components/schemas/AdcsTarget"
+        vector:
+          "$ref": "#/components/schemas/Adcs_xyz_float_t"
+        quat:
+          "$ref": "#/components/schemas/Adcs_quat_t"
+
+    TfrsResponse:
+      description: TFRS time and position
+      type: object
+      required: [age, utc_time,
+                 ecef_pos_x, ecef_pos_y, ecef_pos_z,
+                 ecef_vel_x, ecef_vel_y, ecef_vel_z]
+      properties:
+        age:
+          type: number
+          description: age of the cached value
+        utc_time:
+          type: integer
+          description: unix epoch time
+        ecef_pos_x:
+          type: number
+          description: ECEF X position
+        ecef_pos_y:
+          type: number
+          description: ECEF Y position
+        ecef_pos_z:
+          type: number
+          description: ECEF Z position
+        ecef_vel_x:
+          type: number
+          description: ECEF X velocity
+        ecef_vel_y:
+          type: number
+          description: ECEF Y velocity
+        ecef_vel_z:
+          type: number
+          description: ECEF Z velocity

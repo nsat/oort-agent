@@ -19,6 +19,12 @@
 #include "SendFileRequest.h"
 #include "SendFileResponse.h"
 
+#include "AdcsResponse.h"
+#include "AdcsCommandRequest.h"
+#include "AdcsCommandResponse.h"
+
+#include "TfrsResponse.h"
+
 #include "Agent.h"
 #include "Utils.h"
 
@@ -35,6 +41,12 @@ class SdkApiImpl : public SdkApiRouter {
         const RetrieveFileRequest &retrieveFileRequest, Onion::Response &response);
     void send_file(
         const SendFileRequest &sendFileRequest, Onion::Response &response);
+    void adcs_get(
+        Onion::Response &response);
+    void adcs_post(
+        const AdcsCommandRequest &adcsCommandRequest, Onion::Response &response);
+    void tfrs_get(
+        Onion::Response &response);
 
  private:
     Agent *m_agent;

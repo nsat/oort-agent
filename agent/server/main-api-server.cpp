@@ -23,11 +23,12 @@
 #include "Log.h"
 #include "OnionLog.h"
 #include "AgentUAVCANServer.h"
+#include "AgentUAVCANClient.h"
 #include "version.h"  // NOLINT
 
-static const char VERSION[] = "@(#) Release: " RELEASE_VERSION " Build: " BUILD_VERSION;
+extern const char VERSION[] = "@(#) Release: " RELEASE_VERSION " Build: " BUILD_VERSION;
 
-Onion::Onion *server = NULL;
+Onion::Onion *server = nullptr;
 
 #ifdef __linux__
 static void sigHandler(int sig) {
@@ -38,7 +39,7 @@ static void sigHandler(int sig) {
         case SIGHUP:
         default:
             Log::warn("shutting down on signal");
-            if (server != NULL) {
+            if (server != nullptr) {
                 Log::warn("stopping listener");
                 server->listenStop();
             }
@@ -76,7 +77,8 @@ int main(int argc, char * const argv[]) {
     onion_log = agent_onion_log;
 
     AgentConfig config;
-    AgentUAVCANServer *can_server;
+    AgentUAVCANServer *can_server = nullptr;
+    AgentUAVCANClient *can_client = nullptr;
 
     if (!config.parseOptions(argc, argv)) {
         config.usage(argv[0]);
@@ -89,8 +91,22 @@ int main(int argc, char * const argv[]) {
     Log::info("starting up");
 
     if (config.isCANInterfaceEnabled()) {
-        can_server = new AgentUAVCANServer(config.getCANInterface(), config.getUAVCANNodeID());
-        can_server->start();
+        try {
+            Log::info("Initializing UAVCAN client");
+            can_client = new AgentUAVCANClient(config);
+            agent.setUavClient(can_client);
+
+            Log::info("Starting UAVCAN server");
+            can_server = new AgentUAVCANServer(config.getCANInterface(), config.getUAVCANNodeID());
+            can_server->start();
+            agent.setAdcsMgr(&can_server->m_mgr);
+        }
+        catch (uavcan_linux::Exception e) {
+            Log::error("Fatal error starting can: ?", e.what());
+            if (can_server != nullptr) delete can_server;
+            if (can_client != nullptr) delete can_client;
+            exit(1);
+        }
     }
 
     server = new Onion::Onion(O_POLL | O_NO_SIGTERM);
@@ -114,6 +130,8 @@ int main(int argc, char * const argv[]) {
     if (config.isCANInterfaceEnabled()) {
         can_server->stop();
         delete can_server;
+        delete can_client;
     }
     delete server;
+    Log::info("exiting");
 }

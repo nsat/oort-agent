@@ -29,8 +29,14 @@ endif
 
 SERVER_SRCS = \
 	${SERVER_BASE}/impl/version.h \
+	${SERVER_BASE}/impl/Adaptor.cpp \
+	${SERVER_BASE}/impl/Adaptor.h \
+	${SERVER_BASE}/impl/Adcs.cpp \
+	${SERVER_BASE}/impl/Adcs.h \
 	${SERVER_BASE}/impl/Agent.cpp \
 	${SERVER_BASE}/impl/Agent.h \
+	${SERVER_BASE}/impl/AgentUAVCANClient.cpp \
+	${SERVER_BASE}/impl/AgentUAVCANClient.h \
 	${SERVER_BASE}/impl/AgentUAVCANServer.cpp \
 	${SERVER_BASE}/impl/AgentUAVCANServer.h \
 	${SERVER_BASE}/impl/Cleaner.cpp \
@@ -61,6 +67,8 @@ TEST_SRCS= \
 	${SERVER_BASE}/main-api-server-test.cpp \
 	${SERVER_BASE}/tests/Utils_test.cpp \
 	${SERVER_BASE}/tests/Log_test.cpp \
+	${SERVER_BASE}/tests/Adaptor_test.cpp \
+	${SERVER_BASE}/tests/Adcs_test.cpp \
 	${SERVER_BASE}/tests/Agent_test.cpp \
 	${SERVER_BASE}/tests/Healthcheck_test.cpp \
 	${SERVER_BASE}/tests/utils/hk_error.sh \
@@ -86,7 +94,14 @@ THIRDPARTY_SRCS = \
 	${EMPTY}
 
 USSP_SRCS= \
+	${SERVER_BASE}/ussp/tfrs/223.ReceiverNavigationState.uavcan \
+	${SERVER_BASE}/ussp/payload/225.PayloadAdcsCommand.uavcan \
 	${SERVER_BASE}/ussp/payload/226.PayloadHealthCheck.uavcan \
+	${SERVER_BASE}/ussp/payload/233.PayloadAdcsFeed.uavcan \
+	$(SERVER_BASE)/ussp/payload/AcsMode.uavcan \
+	$(SERVER_BASE)/ussp/payload/TargetT.uavcan \
+	$(SERVER_BASE)/ussp/payload/QuatT.uavcan \
+	$(SERVER_BASE)/ussp/payload/XyzFloatT.uavcan \
 	${EMPTY}
 
 OVERLAY_SRCS=$(SERVER_SRCS) $(TEST_SRCS) $(CMAKE_SRCS)
@@ -105,6 +120,7 @@ DIRS=${BUILD} ${BUILD}/${SERVER_BASE} \
 	${BUILD}/${SERVER_BASE}/patch \
 	${BUILD}/${SERVER_BASE}/ussp \
 	${BUILD}/${SERVER_BASE}/ussp/payload \
+	${BUILD}/${SERVER_BASE}/ussp/tfrs \
 	${EMPTY}
 
 UAVCAN_DEPS=${BUILD}/${SERVER_BASE}/thirdparty/libuavcan/libuavcan/libuavcan.a \
@@ -137,6 +153,8 @@ ${BUILD}/%.bpl: ${SPEC_DIR}/%.yml | dirs
 	@touch -c -d@0 $(OVERLAY_FILES)
 	touch $@
 
+${BUILD}/oort-sdk-api.bpl: ${SPEC_DIR}/adcs-schema.yml ${SPEC_DIR}/adcs-hk.yml
+
 ${BUILD}/oort-sdk-api: ${BUILD}/oort-sdk-api.bpl 
 	touch $@ 
 
@@ -153,7 +171,7 @@ $(OVERLAY_FILES): ${BUILD}/${SERVER_BASE}/%: ${SERVER_BASE}/%
 $(OVERLAY_THIRDPARTY_FILES): ${BUILD}/${SERVER_BASE}/thirdparty/%: ${SERVER_BASE}/thirdparty/%
 	cp -r $< $@
 
-$(OVERLAY_USSP_FILES): ${BUILD}/${SERVER_BASE}/ussp/payload/%: ${SERVER_BASE}/ussp/payload/%
+$(OVERLAY_USSP_FILES): ${BUILD}/${SERVER_BASE}/ussp/%: ${SERVER_BASE}/ussp/%
 	cp $< $@
 
 ${BUILD}/${SERVER_BASE}/Makefile: $(ALL_OVERLAY_FILES) ${BUILD}/oort-sdk-api ${BUILD}/oort-collector-api $(addprefix ${BUILD}/,$(CMAKE_SRCS))
@@ -192,17 +210,44 @@ full: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 		$(MAKE) ${LP_EXTRA}
 	cp ${BUILD}/${SERVER_BASE}/api-server ${BUILD}/oort-server
 
-## test - run unit tests
+## test - run unit tests wrapper
 test: ${BUILD}/oort-server
 	bash tests/test-api-server.sh
 
+## unittest - just unit tests.  TESTS passed to test program
 unittest: ${BUILD}/${SERVER_BASE}/test_agent
-	${BUILD}/${SERVER_BASE}/test_agent
+	${BUILD}/${SERVER_BASE}/test_agent ${TESTS}
+
+COMPOSE_FILE = ../mocking/docker-compose.yml
+
+## unittest-it - docker-compose integration test.  TESTS passed to test program
+unittest-it: TESTS ?= '[adcs-integration]'
+unittest-it: ${BUILD}/${SERVER_BASE}/test_agent
+	trap 'docker-compose -f ${COMPOSE_FILE} down' 0 ;\
+	export TESTS=${TESTS} UID GID=$$(id -g); \
+	docker-compose -f ${COMPOSE_FILE} run unittest
+
+## run-it - docker-compose integration test
+run-it: $(BUILD)/oort-server
+	export UID GID=$$(id -g); \
+	docker-compose -f ${COMPOSE_FILE} up oort-agent
 
 ## run - start up oort-server locally
 run: ${BUILD}/oort-server
 	mkdir /tmp/workdir.1 || true
 	${BUILD}/oort-server -l debug -w /tmp/workdir.1
+
+## runcan -- run with can interface enabled
+runcan: ${BUILD}/oort-server
+	${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12 -N 51
+
+## gdb-runcan -- run under gdb with can interface enabled
+gdb-runcan: ${BUILD}/oort-server
+	gdb --args ${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12 -N 51
+
+## vg-runcan -- run under valgrind with can interface enabled
+vg-runcan: ${BUILD}/oort-server
+	valgrind --tool=memcheck --show-leak-kinds=all --leak-check=full ${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12
 
 ## server - build oort-server 
 server: ${BUILD}/oort-server

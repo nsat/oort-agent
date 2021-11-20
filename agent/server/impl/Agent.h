@@ -15,8 +15,13 @@
 #include <vector>
 #include <regex>  // NOLINT(build/c++11)
 
+#include "AgentUAVCANClient.h"
 #include "Cleaner.h"
 #include "Config.h"
+#include "Adcs.h"
+#include "AdcsResponse.h"
+#include "AdcsCommandRequest.h"
+#include "AdcsCommandResponse.h"
 #include "AvailableFilesResponse.h"
 #include "FileInfo.h"
 #include "InfoRequest.h"
@@ -26,12 +31,16 @@
 #include "SendFileRequest.h"
 #include "SendFileResponse.h"
 #include "SystemInfo.h"
+#include "TfrsResponse.h"
 #include "TransferMeta.h"
 #include "Utils.h"
 
 class Agent {
     Cleaner cleaner;
     friend class Cleaner;
+
+    AgentUAVCANClient *uavcan_client;
+    AdcsManager *adcs = nullptr;
 
     const std::string META_EXT = ".meta.oort";
     const std::string DATA_EXT = ".data.oort";
@@ -93,6 +102,9 @@ class Agent {
 
     Cleaner& getCleaner();
 
+    void setUavClient(AgentUAVCANClient *client);
+    void setAdcsMgr(AdcsManager *mgr) {adcs = mgr;}
+
     void setMinFreeMb(int mb);
     void setMinFreePct(int pct);
 
@@ -106,6 +118,13 @@ class Agent {
     ResponseCode<AvailableFilesResponse> query_available(const std::string &topic);
     ResponseCode<SendFileResponse> send_file(const SendFileRequest &req);
     ResponseCode<FileInfo> retrieve_file(const RetrieveFileRequest &req);
+
+    // SDK ADCS methods
+    ResponseCode<AdcsResponse> adcs_get();
+    ResponseCode<AdcsCommandResponse> adcs_command(const AdcsCommandRequest &req);
+
+    // SDK TFRS methods
+    ResponseCode<TfrsResponse> tfrs_get();
 
     // Collector methods
     ResponseCode<InfoResponse> collector_info(InfoRequest &req);  // model not defined const

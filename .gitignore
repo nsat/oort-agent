@@ -7,6 +7,7 @@ dist/
 
 *.swp
 doc/out
+docs/
 .mypy_cache/
 .vscode/
 agent/gmon.out

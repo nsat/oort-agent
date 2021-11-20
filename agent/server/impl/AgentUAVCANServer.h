@@ -12,6 +12,8 @@
 #include <string>
 #include <thread>  // NOLINT(build/c++11)
 
+#include "Adcs.h"
+
 #include <uavcan_linux/uavcan_linux.hpp>
 #include <uavcan/helpers/ostream.hpp>
 #include <ussp/payload/PayloadHealthCheck.hpp>
@@ -36,6 +38,7 @@ class AgentUAVCANServer {
                                   ussp::payload::PayloadHealthCheck::Response& rsp);
 
  public:
+    AdcsManager m_mgr;
     AgentUAVCANServer(std::string iface, unsigned int node_id);
 
     void start();

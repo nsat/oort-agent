@@ -54,7 +54,10 @@ ExternalProject_Add(NLOHMANN
         -DJSON_BuildTests=off
 )
 
+set(PreviousBuildType ${CMAKE_BUILD_TYPE})
+set(CMAKE_BUILD_TYPE Release)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/libuavcan)
+set(CMAKE_BUILD_TYPE ${PreviousBuildType})
 
 include_directories(${EXTERNAL_INSTALL_LOCATION}/include)
 link_directories(${EXTERNAL_INSTALL_LOCATION}/lib)
@@ -80,6 +83,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dsdlc_generated) # Adding the de
 file(GLOB SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/router/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/impl/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/impl/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/model/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main-api-server.cpp
 )
@@ -96,6 +100,7 @@ target_link_libraries(${PROJECT_NAME} onioncpp_static onion_static pthread z uav
 file(GLOB TEST_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/router/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/impl/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/impl/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/model/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main-api-server-test.cpp

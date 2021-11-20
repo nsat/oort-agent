@@ -9,6 +9,59 @@ info:
 servers:
   - url: http://localhost:2005/sdk/v1
 paths:
+  /tfrs:
+    get:
+      tags:
+        - sdk
+      description: get tfrs values
+      operationId: get_tfrs
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "adcs-schema.yml#/components/schemas/TfrsResponse"
+  /adcs:
+    get:
+      tags:
+        - sdk
+      description: query adcs status
+      operationId: get_adcs
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "adcs-schema.yml#/components/schemas/AdcsResponse"
+
+    post:
+      tags:
+        - sdk
+      description: request adcs operation
+      operationId: command_adcs
+      requestBody:
+        description: The file and parameters for sending
+        required: true
+        content:
+          "application/json":
+            schema:
+              "$ref": "adcs-schema.yml#/components/schemas/AdcsCommandRequest"
+      responses:
+        '200':
+          description: OK
+          content:
+            "application/json":
+              schema:
+                "$ref": "adcs-schema.yml#/components/schemas/AdcsCommandResponse"
+        '400':
+          description: ERROR
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ErrorResponse"
+
   /send_file:
     description: Send a file to a destination
     post:
@@ -89,7 +142,6 @@ paths:
 
 components:
   schemas:
-
     TTLParams:
       description: TTL parameters for a sent item
       properties:

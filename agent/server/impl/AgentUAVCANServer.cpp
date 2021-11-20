@@ -9,13 +9,15 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sstream>
-#include <system_error>
+#include <system_error>  // NOLINT(build/c++11)
 #include <utility>
 #include <vector>
 
 #include "Log.h"
 #include "AgentUAVCANServer.h"
 #include "Utils.h"
+#include <ussp/payload/PayloadAdcsFeed.hpp>
+#include <ussp/tfrs/ReceiverNavigationState.hpp>
 
 #include "nlohmann/json.hpp"
 
@@ -151,6 +153,17 @@ void AgentUAVCANServer::serverTask() {
                 Log::debug("HEALTHCHECK");
                 healthCheckHandler(req, rsp);
             });
+    auto adcs_sub = node->makeSubscriber<ussp::payload::PayloadAdcsFeed>(
+        [this](const uavcan::ReceivedDataStructure<ussp::payload::PayloadAdcsFeed>& msg) {
+            Log::debug("Received ADCS broadcast for time ?", msg.unix_timestamp);
+            m_mgr.setAdcs(msg);
+        });
+    auto tfrs_sub = node->makeSubscriber<ussp::tfrs::ReceiverNavigationState>(
+        [this](const uavcan::ReceivedDataStructure<ussp::tfrs::ReceiverNavigationState>& msg) {
+            Log::debug("Received TFRS broadcast for time ?", msg.utc_time);
+            m_mgr.setTfrs(msg);
+        });
+
     while (thread_running) {
         node->spin(uavcan::MonotonicDuration::fromMSec(1000));
     }

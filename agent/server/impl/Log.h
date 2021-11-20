@@ -27,6 +27,7 @@ class LogArg : public std::string {
     LogArg(const unsigned int val) :  // NOLINT(runtime/explicit)
         std::string(std::to_string(val)) {}
     LogArg(const int64_t val) : std::string(std::to_string(val)) {}  // NOLINT(runtime/explicit)
+    LogArg(const double val) : std::string(std::to_string(val)) {}  // NOLINT(runtime/explicit)
 };
 
 namespace Log {
