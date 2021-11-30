@@ -153,7 +153,11 @@ ${BUILD}/%.bpl: ${SPEC_DIR}/%.yml | dirs
 	@touch -c -d@0 $(OVERLAY_FILES)
 	touch $@
 
-${BUILD}/oort-sdk-api.bpl: ${SPEC_DIR}/adcs-schema.yml ${SPEC_DIR}/adcs-hk.yml
+# blueprint included files
+${BUILD}/%.binc: ${SPEC_DIR}/%.yml
+	touch $@
+
+${BUILD}/oort-sdk-api.bpl: ${BUILD}/adcs-schema.binc ${BUILD}/adcs-hk.binc
 
 ${BUILD}/oort-sdk-api: ${BUILD}/oort-sdk-api.bpl 
 	touch $@ 
