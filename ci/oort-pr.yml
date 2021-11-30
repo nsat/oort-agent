@@ -50,6 +50,7 @@ jobs:
           trigger: true
           params:
             list_changed_files: true
+            fetch_tags: true
         - try:
             task: version-check
             image: dind-base
@@ -82,7 +83,7 @@ jobs:
               dir: pull-request
               args:
                 - -c
-                - "! grep VERSION .git/resource/changed_files || git show --oneline -s refs/tags/v`cat VERSION`"
+                - "! grep VERSION .git/resource/changed_files || git --no-pager show --oneline -s refs/tags/v`cat VERSION`"
           on_failure:
             put: pull-request
             params:
