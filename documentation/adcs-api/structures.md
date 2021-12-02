@@ -41,7 +41,7 @@ An ADCS command to request a particular attitude.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| command | [string](#adcscommand) | The command to send.  Required. |
+| command | [string](#adcscommandmode) | The command to send.  Required. |
 | aperture | [string](#aperture) | The aperture to base the command on.  Required for `TRACK` and `NADIR` commands.|
 | target | [AdcsTarget](#adcstarget) | The target to use for the command.  Required for `TRACK` command. |
 
@@ -68,7 +68,7 @@ A target.
 | lat | number | Latitude in degrees |
 | lon | number | Longitude in degrees |
 
-## AdcsCommand
+## AdcsCommandMode
 
 A command mode to be sent to ADCS.
 
