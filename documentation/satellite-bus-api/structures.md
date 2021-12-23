@@ -1,13 +1,10 @@
-**Version:** 1.0
-
-# Data Structures
+# Reference - Data Structures
 
 ## TfrsResponse
 
-TFRS reading.
+TFRS reading
 
 ### Members
-
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
@@ -30,7 +27,6 @@ ADCS Reading
 | ---- | ---- | ----------- |
 | mode | [string](#acsmode) | Current ACS mode |
 | age | int | Time in seconds since the last reading |
-| controller | string | Controlling payload |
 | hk | [AdcsHk](#adcshk) | Detailed attitude information |
 
 ## AdcsCommandRequest
@@ -76,6 +72,12 @@ A command mode to be sent to ADCS.
 | ---- | ----- |
 | string | Supported commands are IDLE, NADIR, and TRACK |
 
+| command | description |
+| --- | --- |
+| `IDLE` | Do nothing; return to the initial configuration specified on the window |
+| `NADIR` | point straight down |
+| `TRACK` | point at a specified point on the earth's surface |
+
 ## AcsMode
 
 A command mode received from ADCS via feedback. 
@@ -91,6 +93,8 @@ Aperture (imager, antenna, etc) name to use in ADCS pointing requests
 | Type | Notes |
 | ---- | ----- |
 | string | Max length = 24 characters |
+
+Refer to your ICD for valid names.
 
 ## AdcsHk
 

@@ -1,5 +1,5 @@
 ---
-title: ADCS API
+title: Satellite Bus API
 
 language_tabs: # must be one of https://git.io/vQNgJ
   # - shell
@@ -9,8 +9,8 @@ language_tabs: # must be one of https://git.io/vQNgJ
 includes:
   - intro
   - example
-  - structures
   - methods
+  - structures
 
 search: true
 
