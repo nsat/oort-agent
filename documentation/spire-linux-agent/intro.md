@@ -6,6 +6,7 @@ the payload to interface with the rest of the satellite bus.
 Currently Supported APIs include:
 
 * [Data Pipeline API](../data-pipeline-docs/index.html) - Allows users to send and receive files via ISLs or ground based contacts.
+* [Satellite Bus API](../satellite-bus-api/index.html) - Allows users to access spacecraft position and attitude data in near real-time and to issue dynamic pointing commands.
 
 Note: The Spire Linux Agent was formerly know as the OORT Agent.  The OORT name is still referenced in SDK modules and process names.
 
