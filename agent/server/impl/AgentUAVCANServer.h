@@ -32,10 +32,18 @@ class AgentUAVCANServer {
     unsigned int uavcan_node_id;
     std::string healthcheck_cmd;
 
-    uavcan_linux::NodePtr initNode();
+    uavcan_linux::NodePtr node;
+
+    void initNode();
+    void addServices();
+    void resetServices();
     void serverTask();
     void parseHealthcheckResponse(std::string hk_output,
                                   ussp::payload::PayloadHealthCheck::Response& rsp);
+
+    uavcan_linux::ServiceServerPtr<ussp::payload::PayloadHealthCheck> health_srv;
+    uavcan_linux::SubscriberPtr<ussp::payload::PayloadAdcsFeed> adcs_sub;
+    uavcan_linux::SubscriberPtr<ussp::tfrs::ReceiverNavigationState> tfrs_sub;
 
  public:
     AdcsManager m_mgr;

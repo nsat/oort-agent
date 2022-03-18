@@ -337,7 +337,7 @@ int Semaphore::post() {
 
 sem_guard::sem_guard(Semaphore &sem) : m_sem(&sem) {}
 
-sem_guard::~sem_guard() { 
+sem_guard::~sem_guard() {
     if (m_owned) {
         m_sem->post();
     }

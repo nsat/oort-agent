@@ -234,7 +234,7 @@ unittest-it: ${BUILD}/${SERVER_BASE}/test_agent
 ## run-it - docker-compose integration test
 run-it: $(BUILD)/oort-server
 	export UID GID=$$(id -g); \
-	docker-compose -f ${COMPOSE_FILE} up oort-agent
+	docker-compose -f ${COMPOSE_FILE} up oort-agent bouncy
 
 ## run - start up oort-server locally
 run: ${BUILD}/oort-server
