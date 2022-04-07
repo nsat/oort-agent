@@ -71,6 +71,7 @@ TEST_SRCS= \
 	${SERVER_BASE}/tests/Adcs_test.cpp \
 	${SERVER_BASE}/tests/Agent_test.cpp \
 	${SERVER_BASE}/tests/Healthcheck_test.cpp \
+	${SERVER_BASE}/tests/Files_test.cpp \
 	${SERVER_BASE}/tests/utils/hk_error.sh \
 	${SERVER_BASE}/tests/utils/hk_garbage.sh \
 	${SERVER_BASE}/tests/utils/hk_hanging.sh \
@@ -204,7 +205,7 @@ ${BUILD}/oort-server: ${BUILD}/${SERVER_BASE}/api-server
 	cp ${BUILD}/${SERVER_BASE}/api-server $@
 
 # .PHONY: ${SERVER_BASE}/impl/version.h
-${SERVER_BASE}/impl/version.h:
+${SERVER_BASE}/impl/version.h: ../VERSION
 	sh mk-version.sh > $@
 
 ## full - build everything

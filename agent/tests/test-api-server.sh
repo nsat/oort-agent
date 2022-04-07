@@ -80,7 +80,7 @@ while ! nc localhost 2005 < /dev/null ; do
 done
 
 cget blob http://localhost:2005/collector/v1/info -X POST
-jq_assert "$blob" .sysinfo.version 1.1 "Version check"
+jq_assert "$blob" .sysinfo.version 1.3.2 "Version check"
 jq_assert "$blob" .sysinfo.workdir $WORKDIR/transfers "Working directory"
 
 diskfree=$(df -B1 $WORKDIR | awk 'NR~2 {print $4}')
