@@ -204,8 +204,8 @@ ${BUILD}/${SERVER_BASE}/test_agent: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERL
 ${BUILD}/oort-server: ${BUILD}/${SERVER_BASE}/api-server
 	cp ${BUILD}/${SERVER_BASE}/api-server $@
 
-# .PHONY: ${SERVER_BASE}/impl/version.h
-${SERVER_BASE}/impl/version.h: ../VERSION
+.PHONY: ${SERVER_BASE}/impl/version.h
+${SERVER_BASE}/impl/version.h:
 	sh mk-version.sh > $@
 
 ## full - build everything
