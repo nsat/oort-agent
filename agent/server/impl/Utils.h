@@ -59,18 +59,40 @@ onion_connection_status deliverResponse(Onion::Response &rstream, ResponseCode<T
 }
 
 // simple semaphore wrapper
-class BinSemaphore final {
+class Semaphore {
     sem_t sem;
  public:
-    BinSemaphore();
-    ~BinSemaphore();
-    BinSemaphore(const BinSemaphore&) = delete;
-    BinSemaphore& operator=(const BinSemaphore&) = delete;
-    BinSemaphore(BinSemaphore&&) = delete;
-    BinSemaphore& operator=(BinSemaphore&&) = delete;
+    Semaphore(int n);
+    ~Semaphore();
+    Semaphore(const Semaphore&) = delete;
+    Semaphore& operator=(const Semaphore&) = delete;
+    Semaphore(Semaphore&&) = delete;
+    Semaphore& operator=(Semaphore&&) = delete;
     int wait();
+    int trywait();
     int timedwait(const timespec& abs_timeout);
     int post();
+};
+
+// Binary semaphore version of simple wrapper.
+class BinSemaphore : public Semaphore {
+ public:
+    BinSemaphore() : Semaphore(1) {}
+};
+
+/**
+ * @brief RAII semaphore guard wrapper, similar to lock_guard.
+ * Provides operations to wait on a semaphore and automatically
+ * post it when the guard is destroyed.
+ */
+class sem_guard final {
+    Semaphore *m_sem;
+    bool m_owned = false;
+  public:
+    sem_guard(Semaphore &sem);
+    ~sem_guard();
+    bool wait();
+    bool trywait();
 };
 
 std::string mkUUID();

@@ -325,18 +325,25 @@ ResponseCode<AdcsResponse> Agent::adcs_get() {
 
 ResponseCode<AdcsCommandResponse> Agent::adcs_command(const AdcsCommandRequest &req) {
     ResponseCode<AdcsCommandResponse> resp;
+    static BinSemaphore latch;
+    sem_guard guard(latch);
 
     if (uavcan_client == nullptr) {
         resp.code = Code::Bad_Request;
         resp.err.setMessage("Adcs interface is unavailable");
         return resp;
     }
-    uavcan_client->AdcsCommand(req, resp.result);
-    if (resp.result.getStatus() == Adaptor::Status::OK) {
-        resp.code = Code::Ok;
+    if (guard.trywait()) {
+        uavcan_client->AdcsCommand(req, resp.result);
+        if (resp.result.getStatus() == Adaptor::Status::OK) {
+            resp.code = Code::Ok;
+        } else {
+            resp.code = Code::Bad_Request;
+            resp.err.setMessage(resp.result.getReason());
+        }
     } else {
         resp.code = Code::Bad_Request;
-        resp.err.setMessage(resp.result.getReason());
+        resp.err.setMessage("Request in progress");
     }
     return resp;
 }

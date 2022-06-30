@@ -309,24 +309,50 @@ int runProcessGetOutput(const string &cmd, const char *const argv[], size_t max_
     }
 }
 
-BinSemaphore::BinSemaphore() {
-    if (sem_init(&sem, 0, 1) != 0) {
+Semaphore::Semaphore(int n) {
+    if (sem_init(&sem, 0, n) != 0) {
         throw system_error(errno, generic_category(), "initializing semaphore");
     }
 }
 
-BinSemaphore::~BinSemaphore() {
+Semaphore::~Semaphore() {
     sem_destroy(&sem);
 }
 
-int BinSemaphore::wait() {
+int Semaphore::wait() {
     return sem_wait(&sem);
 }
 
-int BinSemaphore::timedwait(const timespec& abs_timeout) {
+int Semaphore::trywait() {
+    return sem_trywait(&sem);
+}
+
+int Semaphore::timedwait(const timespec& abs_timeout) {
     return sem_timedwait(&sem, &abs_timeout);
 }
 
-int BinSemaphore::post() {
+int Semaphore::post() {
     return sem_post(&sem);
+}
+
+sem_guard::sem_guard(Semaphore &sem) : m_sem(&sem) {}
+
+sem_guard::~sem_guard() { 
+    if (m_owned) {
+        m_sem->post();
+    }
+}
+
+bool sem_guard::wait() {
+    if (m_sem->wait() == 0) {
+        m_owned = true;
+    }
+    return m_owned;
+}
+
+bool sem_guard::trywait() {
+    if (m_sem->trywait() == 0) {
+        m_owned = true;
+    }
+    return m_owned;
 }

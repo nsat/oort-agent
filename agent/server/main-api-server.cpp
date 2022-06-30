@@ -109,7 +109,7 @@ int main(int argc, char * const argv[]) {
         }
     }
 
-    server = new Onion::Onion(O_POLL | O_NO_SIGTERM);
+    server = new Onion::Onion(O_POOL | O_NO_SIGTERM);
     server->setMaxPostSize(8000);
     server->setMaxThreads(4);
     server->setPort(config.getPort());

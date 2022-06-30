@@ -16,7 +16,7 @@
 #include "AdcsCommandRequest.h"
 #include "AdcsCommandResponse.h"
 
-static const unsigned UAVCLIENT_TIMEOUT = 1000;
+static const unsigned UAVCLIENT_TIMEOUT = 2000;
 
 /**
  * \brief Agent UAVCAN client
