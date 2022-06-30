@@ -13,6 +13,6 @@ cat << EOF
 #pragma once
 
 #define BUILD_VERSION "$(git describe --tags)"
-#define RELEASE_VERSION "1.1"
-#define API_VERSION "1.0"
+#define RELEASE_VERSION "$(cat $(git rev-parse --show-toplevel)/VERSION)"
+#define API_VERSION "$(awk '/version:/ {gsub(/['"'"'"]/, "", $2) ; print $2}' $(git rev-parse --show-toplevel)/spec/oort-sdk-api.yml)"
 EOF

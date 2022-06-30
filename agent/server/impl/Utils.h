@@ -62,7 +62,7 @@ onion_connection_status deliverResponse(Onion::Response &rstream, ResponseCode<T
 class Semaphore {
     sem_t sem;
  public:
-    Semaphore(int n);
+    explicit Semaphore(int n);
     ~Semaphore();
     Semaphore(const Semaphore&) = delete;
     Semaphore& operator=(const Semaphore&) = delete;
@@ -88,8 +88,8 @@ class BinSemaphore : public Semaphore {
 class sem_guard final {
     Semaphore *m_sem;
     bool m_owned = false;
-  public:
-    sem_guard(Semaphore &sem);
+ public:
+    explicit sem_guard(Semaphore &sem);
     ~sem_guard();
     bool wait();
     bool trywait();

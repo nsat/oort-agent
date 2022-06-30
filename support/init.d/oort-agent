@@ -1,18 +1,36 @@
 #!/bin/sh
+### BEGIN INIT INFO
+# Provides: oort-agent
+# Required-Start: $local_fs $syslog $network 
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: oort payload agent 
+### END INIT INFO
 
 PID="/var/run/oort-agent.pid"
-CMD="/oort-agent"
-WORKDIR="/workdir"
+CMD="/usr/bin/oort-agent"
+WORKDIR="/media/sd1/oort-agent"
+SYSLOG_IDENT="oort-agent"
+# CAN configuration for SDR
+CAN_DEV="can1"
+CAN_ID=104
 
 case $1 in
   start)
+    if ifconfig -s | grep -q "\<$CAN_DEV\>" ; then
+      echo "oort-agent listening on can interface $CAN_DEV"
+      CAN_ARGS="-c $CAN_DEV -n $CAN_ID"
+    else
+      echo "can intercace $CAN_DEV not found; oort-agent not listening on can interface"
+      CAN_ARGS=""
+    fi
     echo "starting OORT Agent"
-    $CMD -w $WORKDIR 2>&1 &
-    echo $! > $PID
+    # ensure working directory exists
+    test -d $WORKDIR || mkdir -p $WORKDIR
+    start-stop-daemon -S -p $PID -x $CMD -mb -- -w $WORKDIR -s $SYSLOG_IDENT $CAN_ARGS
     ;;
   stop)
     echo "stopping OORT Agent"
-    kill `cat $PID`
-    rm $PID
+    start-stop-daemon -K -p $PID -x $CMD
     ;;
 esac

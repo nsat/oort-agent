@@ -122,17 +122,15 @@ void AgentUAVCANServer::healthCheckHandler(
     }
 }
 
-uavcan_linux::NodePtr AgentUAVCANServer::initNode() {
+void AgentUAVCANServer::initNode() {
     std::vector<std::string> ifaces(1);
     ifaces[0] = can_interface;
-    auto node = uavcan_linux::makeNode(ifaces, "com.spire.linux_agent",
+    node = uavcan_linux::makeNode(ifaces, "com.spire.linux_agent",
                                        uavcan::protocol::SoftwareVersion(),
                                        uavcan::protocol::HardwareVersion(),
                                        (uavcan::NodeID) uavcan_node_id);
     node->getScheduler().setDeadlineResolution(uavcan::MonotonicDuration::fromMSec(100));
     node->setModeOperational();
-
-    return node;
 }
 
 AgentUAVCANServer::AgentUAVCANServer(std::string iface, unsigned int node_id) {
@@ -142,32 +140,61 @@ AgentUAVCANServer::AgentUAVCANServer(std::string iface, unsigned int node_id) {
     setPayloadHealthcheckCommand(HEALTHCHECK_CMD);
 }
 
-void AgentUAVCANServer::serverTask() {
-    Log::setThreadName("uavcan_server");
-    Log::info("UAVCAN server starting on ? with node ID ?", can_interface, uavcan_node_id);
-    uavcan_linux::NodePtr node = initNode();
+void AgentUAVCANServer::addServices() {
     // HealthCheck
-    auto health_srv = node->makeServiceServer<ussp::payload::PayloadHealthCheck>(
+    health_srv = node->makeServiceServer<ussp::payload::PayloadHealthCheck>(
         [&](const uavcan::ReceivedDataStructure<ussp::payload::PayloadHealthCheck::Request>& req,
             ussp::payload::PayloadHealthCheck::Response& rsp) {
                 Log::debug("HEALTHCHECK");
                 healthCheckHandler(req, rsp);
             });
-    auto adcs_sub = node->makeSubscriber<ussp::payload::PayloadAdcsFeed>(
+    adcs_sub = node->makeSubscriber<ussp::payload::PayloadAdcsFeed>(
         [this](const uavcan::ReceivedDataStructure<ussp::payload::PayloadAdcsFeed>& msg) {
             Log::debug("Received ADCS broadcast for time ?", msg.unix_timestamp);
             m_mgr.setAdcs(msg);
         });
-    auto tfrs_sub = node->makeSubscriber<ussp::tfrs::ReceiverNavigationState>(
+    tfrs_sub = node->makeSubscriber<ussp::tfrs::ReceiverNavigationState>(
         [this](const uavcan::ReceivedDataStructure<ussp::tfrs::ReceiverNavigationState>& msg) {
             Log::debug("Received TFRS broadcast for time ?", msg.utc_time);
             m_mgr.setTfrs(msg);
         });
+}
+
+void AgentUAVCANServer::resetServices() {
+    health_srv.reset();
+    adcs_sub.reset();
+    tfrs_sub.reset();
+    node.reset();
+}
+
+void AgentUAVCANServer::serverTask() {
+    Log::setThreadName("uavcan_server");
+    Log::info("UAVCAN server starting on ? with node ID ?", can_interface, uavcan_node_id);
+    initNode();
+    addServices();
 
     while (thread_running) {
-        node->spin(uavcan::MonotonicDuration::fromMSec(1000));
+        try {
+            node->spin(uavcan::MonotonicDuration::fromMSec(1000));
+        } catch (uavcan_linux::AllIfacesDownException &e) {
+            // the interface went down.   sleep and try again?
+            resetServices();
+            Log::warn("? interface went down; trying to reconnect", can_interface);
+            while (thread_running) {
+                this_thread::sleep_for(chrono::milliseconds(500));
+                try {
+                    initNode();
+                    addServices();
+                    Log::warn("reconnected to ?", can_interface);
+                    break;
+                } catch (uavcan_linux::Exception &e) {
+                    Log::debug("? still down", can_interface);
+                }
+            }
+        }
     }
     Log::info("UAVCAN server task exiting");
+    resetServices();
 }
 
 void AgentUAVCANServer::start() {
