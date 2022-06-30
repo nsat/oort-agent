@@ -21,6 +21,11 @@ CollectorApiImpl::CollectorApiImpl(Agent *agent)
     m_agent = agent;
 }
 
+void CollectorApiImpl::ping(Response &response) {
+    auto resp = m_agent->ping();
+    deliverResponse(response, resp);
+}
+
 void CollectorApiImpl::info(InfoRequest &request, Response &response) {
     auto resp = m_agent->collector_info(request);
     deliverResponse(response, resp);

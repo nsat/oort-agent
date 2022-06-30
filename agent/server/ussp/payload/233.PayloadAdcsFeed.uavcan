@@ -1,0 +1,54 @@
+AcsMode acs_mode_active
+# Active ADCS mode
+
+QuatT control_error_q
+# Feedback on quaternion error
+
+QuatT q_bo_est
+# estimated spacecraft attitude quaternion in the orbit (lvlh) frame
+
+float32 latlontrack_lat
+# latitude used for ground target tracking
+
+bool lease_active
+# Flag if a lease is currently active
+
+bool eclipse_flag
+# Sunlit/eclipse status of spacecraft
+
+QuatT q_bi_est
+# estimated spacecraft attitude quaternion in the inertial coordinate frame
+
+float32 latlontrack_lon
+# longitude used for ground target tracking
+
+XyzFloatT r_eci
+# estimated spacecraft position in ECI frame
+
+XyzFloatT latlontrack_body_vector
+# body vector used to point at ground targets
+
+XyzFloatT omega_bo_est
+# Body rate estimate in orbit frame
+
+AcsMode acs_mode_cmd
+# Commanded ADCS mode
+
+XyzFloatT v_eci
+# estimated spacecraft velocity in ECI frame
+
+QuatT qcf
+# control frame quaternion
+
+uint32 lease_time_remaining
+# time remaining in current ADCS lease
+
+float64 unix_timestamp
+# Unix epoch time
+
+XyzFloatT omega_bi_est
+# Body rate estimate in inertial frame
+
+XyzFloatT control_error_omega
+# Feedback on rate error
+

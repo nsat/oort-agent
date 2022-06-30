@@ -24,6 +24,12 @@ using namespace std;
 
 CollectorApiRouter::CollectorApiRouter() {
     Log::info("setting up collector routes");
+    this->add("v1/ping", [this](Onion::Request &req, Onion::Response &resp) {
+        InfoRequest ireq;
+        CheckMethod(req, resp, GET);
+        this->ping(resp);
+        return OCS_PROCESSED;
+    });
     this->add("v1/info", [this](Onion::Request &req, Onion::Response &resp) {
         InfoRequest ireq;
         CheckMethod(req, resp, POST);

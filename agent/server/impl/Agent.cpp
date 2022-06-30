@@ -24,6 +24,7 @@
 #include <utility>
 #include <vector>
 
+#include "Adaptor.h"
 #include "Files.h"
 #include "Log.h"
 #include "Utils.h"
@@ -55,6 +56,8 @@ Agent::Agent(const AgentConfig &cfg) : cleaner(this) {
     cleaner.setCleanupInterval(cfg.cleanupInterval);
     cleaner.setMaxAge(cfg.maxAge);
     cleaner.scheduleCleanup();
+
+    uavcan_client = nullptr;
 }
 
 Agent::~Agent() {
@@ -64,6 +67,10 @@ Agent::~Agent() {
 
 Cleaner& Agent::getCleaner() {
     return cleaner;
+}
+
+void Agent::setUavClient(AgentUAVCANClient *client) {
+    uavcan_client = client;
 }
 
 void Agent::create_dirs(const std::vector<string> &dirs) {
@@ -168,6 +175,15 @@ TransferMeta Agent::read_transfer_meta(const string &file) {
     }
 
     return tm;
+}
+
+ResponseCode<PingResponse> Agent::ping() {
+    ResponseCode<PingResponse> resp;
+
+    resp.code = Code::Ok;
+    resp.result = PingResponse();
+    resp.result.setResponse("PONG");
+    return resp;
 }
 
 ResponseCode<TransferMeta> Agent::meta(const std::string &uuid) {
@@ -291,6 +307,50 @@ ResponseCode<FileInfo> Agent::retrieve_file(
     unlink(src_meta.c_str());
 
     resp.code = Code::Ok;
+    return resp;
+}
+
+ResponseCode<AdcsResponse> Agent::adcs_get() {
+    ResponseCode<AdcsResponse> resp;
+
+    if (adcs == nullptr) {
+        resp.code = Code::Bad_Request;
+        resp.err.setMessage("Adcs interface is unavailable");
+        return resp;
+    }
+    resp.code = Code::Ok;
+    resp.result = adcs->getAdcs();
+    return resp;
+}
+
+ResponseCode<AdcsCommandResponse> Agent::adcs_command(const AdcsCommandRequest &req) {
+    ResponseCode<AdcsCommandResponse> resp;
+
+    if (uavcan_client == nullptr) {
+        resp.code = Code::Bad_Request;
+        resp.err.setMessage("Adcs interface is unavailable");
+        return resp;
+    }
+    uavcan_client->AdcsCommand(req, resp.result);
+    if (resp.result.getStatus() == Adaptor::Status::OK) {
+        resp.code = Code::Ok;
+    } else {
+        resp.code = Code::Bad_Request;
+        resp.err.setMessage(resp.result.getReason());
+    }
+    return resp;
+}
+
+ResponseCode<TfrsResponse> Agent::tfrs_get() {
+    ResponseCode<TfrsResponse> resp;
+
+    if (adcs == nullptr) {
+        resp.code = Code::Bad_Request;
+        resp.err.setMessage("Tfrs interface is unavailable");
+        return resp;
+    }
+    resp.code = Code::Ok;
+    resp.result = adcs->getTfrs();
     return resp;
 }
 

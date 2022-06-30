@@ -24,6 +24,7 @@ $(CLIENTS): %: %-sdk-client/README.md
 %-sdk-client/README.md:
 	docker run --rm \
 	  -v ${ROOT}:/local -w /local/${CUR} \
+	  -u `id -u` \
 	  ${OPENAPI_IMAGE} generate \
 	  -i ../spec/oort-sdk-api.yml \
 	  -o $*-sdk-client/ \
@@ -37,6 +38,7 @@ $(CLIENTS): %: %-sdk-client/README.md
 %-collector-client/README.md:
 	docker run --rm \
 	  -v /:/local -w /local/${CURDIR} \
+	  -u `id -u` \
 	  ${OPENAPI_IMAGE} generate \
 	  -i ../spec/oort-collector-api.yml \
 	  -o $*-collector-client/ \

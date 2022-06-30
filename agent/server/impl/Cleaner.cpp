@@ -25,9 +25,6 @@
 using namespace std;
 
 Cleaner::Cleaner(const Agent *agent) : m_agent(agent) {
-    if (sem_init(&runningSem, 0, 1) != 0) {
-        throw system_error(errno, generic_category(), "initializing semaphore");
-    }
     workerRunning = false;
 }
 
@@ -67,7 +64,7 @@ void Cleaner::cleanupTask() {
         ts.tv_sec = chrono::duration_cast<chrono::seconds>(
             next_run.time_since_epoch()).count();
 
-        int status = sem_timedwait(&runningSem, &ts);
+        int status = runningSem.timedwait(ts);
         if (workerRunning && status == -1 && errno == ETIMEDOUT) {
             doCleanup();
         }
@@ -96,7 +93,7 @@ void Cleaner::cleanOldFiles(const string &dir) {
 
 void Cleaner::scheduleCleanup() {
     workerRunning = true;
-    sem_wait(&runningSem);
+    runningSem.wait();
     thread worker(&Cleaner::cleanupTask, this);
     ostringstream s("");
     s << worker.get_id();
@@ -106,6 +103,6 @@ void Cleaner::scheduleCleanup() {
 
 void Cleaner::stopWorker() {
     workerRunning = false;
-    sem_post(&runningSem);
+    runningSem.post();
     cleanupWorker.join();
 }

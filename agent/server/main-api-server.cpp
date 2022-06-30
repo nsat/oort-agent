@@ -22,8 +22,13 @@
 #include "SdkApiImpl.h"
 #include "Log.h"
 #include "OnionLog.h"
+#include "AgentUAVCANServer.h"
+#include "AgentUAVCANClient.h"
+#include "version.h"  // NOLINT
 
-Onion::Onion *server = NULL;
+extern const char VERSION[] = "@(#) Release: " RELEASE_VERSION " Build: " BUILD_VERSION;
+
+Onion::Onion *server = nullptr;
 
 #ifdef __linux__
 static void sigHandler(int sig) {
@@ -34,7 +39,7 @@ static void sigHandler(int sig) {
         case SIGHUP:
         default:
             Log::warn("shutting down on signal");
-            if (server != NULL) {
+            if (server != nullptr) {
                 Log::warn("stopping listener");
                 server->listenStop();
             }
@@ -42,8 +47,13 @@ static void sigHandler(int sig) {
     }
 }
 
-static void setUpUnixSignals(std::vector<int> quitSignals) {
+static void setUpUnixSignals(std::vector<int> quitSignals, std::vector<int> blockSignals) {
     sigset_t blocking_mask;
+    sigemptyset(&blocking_mask);
+    for (auto sig : blockSignals)
+        sigaddset(&blocking_mask, sig);
+    sigprocmask(SIG_BLOCK, &blocking_mask, nullptr);
+
     sigemptyset(&blocking_mask);
     for (auto sig : quitSignals)
         sigaddset(&blocking_mask, sig);
@@ -60,14 +70,15 @@ static void setUpUnixSignals(std::vector<int> quitSignals) {
 
 int main(int argc, char * const argv[]) {
 #ifdef __linux__
-    std::vector<int> sigs{SIGQUIT, SIGINT, SIGTERM, SIGHUP};
-    setUpUnixSignals(sigs);
+    setUpUnixSignals({SIGQUIT, SIGINT, SIGTERM, SIGHUP}, {SIGCHLD});
 #endif
 
     // set onion library to use our logger
     onion_log = agent_onion_log;
 
     AgentConfig config;
+    AgentUAVCANServer *can_server = nullptr;
+    AgentUAVCANClient *can_client = nullptr;
 
     if (!config.parseOptions(argc, argv)) {
         config.usage(argv[0]);
@@ -78,6 +89,25 @@ int main(int argc, char * const argv[]) {
 
     Log::info("Workdir = ?",  agent.getWorkdir());
     Log::info("starting up");
+
+    if (config.isCANInterfaceEnabled()) {
+        try {
+            Log::info("Initializing UAVCAN client");
+            can_client = new AgentUAVCANClient(config);
+            agent.setUavClient(can_client);
+
+            Log::info("Starting UAVCAN server");
+            can_server = new AgentUAVCANServer(config.getCANInterface(), config.getUAVCANNodeID());
+            can_server->start();
+            agent.setAdcsMgr(&can_server->m_mgr);
+        }
+        catch (uavcan_linux::Exception e) {
+            Log::error("Fatal error starting can: ?", e.what());
+            if (can_server != nullptr) delete can_server;
+            if (can_client != nullptr) delete can_client;
+            exit(1);
+        }
+    }
 
     server = new Onion::Onion(O_POLL | O_NO_SIGTERM);
     server->setMaxPostSize(8000);
@@ -96,5 +126,12 @@ int main(int argc, char * const argv[]) {
     Log::info("starting listener on port ?", config.getPort());
     server->listen();
     Log::info("listener stopped");
+
+    if (config.isCANInterfaceEnabled()) {
+        can_server->stop();
+        delete can_server;
+        delete can_client;
+    }
     delete server;
+    Log::info("exiting");
 }

@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <semaphore.h>
 #include <string>
 
 #include "onion/onion.hpp"
@@ -57,6 +58,21 @@ onion_connection_status deliverResponse(Onion::Response &rstream, ResponseCode<T
     return OCS_PROCESSED;
 }
 
+// simple semaphore wrapper
+class BinSemaphore final {
+    sem_t sem;
+ public:
+    BinSemaphore();
+    ~BinSemaphore();
+    BinSemaphore(const BinSemaphore&) = delete;
+    BinSemaphore& operator=(const BinSemaphore&) = delete;
+    BinSemaphore(BinSemaphore&&) = delete;
+    BinSemaphore& operator=(BinSemaphore&&) = delete;
+    int wait();
+    int timedwait(const timespec& abs_timeout);
+    int post();
+};
+
 std::string mkUUID();
 std::string OSError(const std::string &prefix = "");
 std::string getCrc(const std::string &file);
@@ -68,3 +84,5 @@ bool ends_with(const std::string &str, const std::string &tail);
 std::string chop(const std::string &str, const std::string &tail);
 bool starts_with(const std::string &str, const std::string &head);
 std::string behead(const std::string &str, const std::string &head);
+int runProcessGetOutput(const std::string &cmd, const char *const argv[],
+                        size_t max_output_size, uint32_t timeout_seconds, std::string &output);

@@ -12,6 +12,7 @@
 #include <string>
 #include <thread>  // NOLINT(build/c++11)
 #include <vector>
+#include "Utils.h"
 
 class Agent;
 
@@ -30,7 +31,7 @@ class Cleaner {
     int m_maxAge = 86400;
     std::thread cleanupWorker;
     std::atomic<bool> workerRunning;
-    sem_t runningSem;
+    BinSemaphore runningSem;
 
     Cleaner();
 

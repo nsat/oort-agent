@@ -1,0 +1,5 @@
+float32 lat
+# latitude for tracking modes
+
+float32 lon
+# longitude for tracking modes

@@ -24,6 +24,7 @@ class CollectorApiImpl : public CollectorApiRouter {
     explicit CollectorApiImpl(Agent *agent);
     ~CollectorApiImpl() {}
 
+    void ping(Onion::Response &response);
     void info(InfoRequest &request, Onion::Response &response);
     void meta(const std::string &uuid, Onion::Response &response);
 
