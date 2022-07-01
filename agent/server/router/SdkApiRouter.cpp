@@ -31,14 +31,14 @@ SdkApiRouter::SdkApiRouter() {
     this->add("^v1/send_file$", [this](Onion::Request &req, Onion::Response &resp) {
         CheckMethod(req, resp, POST);
         SendFileRequest sreq;
-        GetPostData(sreq, req);
+        ParseRequest(sreq, req, resp);
         this->send_file(sreq, resp);
         return OCS_PROCESSED;
     });
     this->add("^v1/retrieve_file$", [this](Onion::Request &req, Onion::Response &resp) {
         CheckMethod(req, resp, POST);
         RetrieveFileRequest rreq;
-        GetPostData(rreq, req);
+        ParseRequest(rreq, req, resp);
         this->retrieve_file(rreq, resp);
         return OCS_PROCESSED;
     });
@@ -47,7 +47,7 @@ SdkApiRouter::SdkApiRouter() {
             this->adcs_get(resp);
         } else if (GetMethod(req) == OR_POST) {
             AdcsCommandRequest areq;
-            GetPostData(areq, req);
+            ParseRequest(areq, req, resp);
             this->adcs_post(areq, resp);
         } else {
             BadMethod(resp);

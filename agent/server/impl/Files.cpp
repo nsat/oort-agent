@@ -29,12 +29,12 @@ vector<string> Files::file_names(const string &dir) {
   vector<string> file_list;
   for (auto f = files.begin(); f != files.end(); ++f) {
     try {
-      // file_info is used as a valid item filter;   it throws runtime_error
-      // on a bad file
-      auto fi = file_info(dir + "/" + *f);
+      // file_stat is used as a valid item filter;   it throws runtime_error
+      // on a bad file.  The return value is ignored.
+      auto fs = file_stat(dir + "/" + *f);
       file_list.push_back(*f);
     } catch (const runtime_error &e) {
-      // ignore errors thrown from file_info
+      // ignore errors thrown from file_stat
     }
   }
   return file_list;
@@ -72,11 +72,12 @@ vector<string> Files::list_files(const string &dir, const string &ext) {
 }
 
 /**
- * \brief Build and return a FileInfo for the given file
+ * \brief stat a file
  * 
  * Throws an error if the file is not a regular file.
+ * 
  */
-FileInfo Files::file_info(const string &file) {
+struct stat Files::file_stat(const std::string &file) {
     struct stat buf;
 
     if (stat(file.c_str(), &buf) != 0) {
@@ -84,6 +85,19 @@ FileInfo Files::file_info(const string &file) {
     } else if (!S_ISREG(buf.st_mode)) {
         throw runtime_error("stat error: " + file + " is not a regular file");
     }
+
+    return buf;
+}
+
+/**
+ * \brief Build and return a FileInfo for the given file
+ * 
+ * Throws an error (from file_stat) if the file is not a regular file.
+ * 
+ * NB: will read the entire file in order to calculate the CRC.
+ */
+FileInfo Files::file_info(const string &file) {
+    struct stat buf = Files::file_stat(file);
 
     FileInfo fi;
     fi.setPath(file);
