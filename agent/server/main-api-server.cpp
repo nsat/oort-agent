@@ -40,12 +40,12 @@ static void sigHandler(int sig) {
         case SIGHUP:
         default:
             Log::warn("shutting down on signal");
+            std::time_t shutdownStartTime = std::time(NULL)
             if (server != nullptr) {
-                std::time_t shutdownStartTime = std::time(NULL)
                 Log::warn("stopping listener");
                 server->listenStop();
-                Log::info("Shutdown took ? seconds", std::time(NULL) - shutdownStartTime)
             }
+            Log::info("Shutdown took ? seconds", std::time(NULL) - shutdownStartTime)
             break;
     }
 }
