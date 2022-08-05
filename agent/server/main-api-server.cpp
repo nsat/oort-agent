@@ -44,7 +44,7 @@ static void sigHandler(int sig) {
                 std::time_t shutdownStartTime = std::time(NULL)
                 Log::warn("stopping listener");
                 server->listenStop();
-                Log::warn("Shutdown took ? seconds", std::time(NULL) - shutdownStartTime)
+                Log::info("Shutdown took ? seconds", std::time(NULL) - shutdownStartTime)
             }
             break;
     }
