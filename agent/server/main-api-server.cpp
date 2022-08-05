@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <vector>
+#include <ctime>
 #endif
 
 #include "onion/onion.hpp"
@@ -40,8 +41,10 @@ static void sigHandler(int sig) {
         default:
             Log::warn("shutting down on signal");
             if (server != nullptr) {
+                std::time_t shutdownStartTime = std::time(NULL)
                 Log::warn("stopping listener");
                 server->listenStop();
+                Log::warn("Shutdown took ? seconds", std::time(NULL) - shutdownStartTime)
             }
             break;
     }

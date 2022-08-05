@@ -31,6 +31,6 @@ case $1 in
     ;;
   stop)
     echo "stopping OORT Agent"
-    start-stop-daemon -K -p $PID -x $CMD
+    start-stop-daemon -K --retry 9999 -p $PID -x $CMD
     ;;
 esac
