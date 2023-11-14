@@ -22,7 +22,7 @@ Unless otherwise specified, all time values are in seconds.
 | ---- | ---- | ----------- | ------- |
 | urgent | int | TTL for urgent queue -- data here is transmitted first, and moved to bulk when TTL expires | 9000  (2.5 hours) |
 | bulk | int | TTL for bulk queue -- data here is transmitted second, and moved to surplus when TTL expires | 43200 (12 hours) |
-| surplus | int | TTL for surplus queue -- data here is transmitted third, and deleted when TTL expire| 172800 (48 hours) |
+| surplus | int | TTL for surplus queue -- data here is transmitted third, and deleted when TTL expires| 172800 (48 hours) |
 
 Data in all three queues is transmitted First In First Out (FIFO).
 
