@@ -18,7 +18,7 @@ Unless otherwise specified, all time values are in seconds.
 | ---- | ---- | ----------- | ------- |
 | urgent | int | TTL for urgent queue | 9000  (2.5 hours) |
 | bulk | int | TTL for bulk queue | 43200 (12 hours) |
-| surplus | int | TTL for bulk queue | 172800 (48 hours) |
+| surplus | int | TTL for surplus queue | 172800 (48 hours) |
 
 ## SendOptions
 ```
