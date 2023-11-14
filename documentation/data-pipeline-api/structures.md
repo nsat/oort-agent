@@ -8,7 +8,11 @@
 see SendFileRequest for usage example
 ```
 
-Time-to-live (TTL) parameters for a sent item
+OORT has three queues for any data topic: urgent, bulk, and surplus. Data in the urgent queue stage is transmitted first, followed by data in the bulk queue stage, followed by data in the surplus queue stage. 
+
+The developer may set a file's Time-to-live (TTL) for each stage individually. For lower priority data it is possible to skip the urgent stage and add the data directly to bulk, or skip both the urgent and bulk stages and add directly to surplus.
+
+Time-to-live (TTL) parameters for a sent item are described below.  
 
 ### Members
 
@@ -16,9 +20,11 @@ Unless otherwise specified, all time values are in seconds.
 
 | Name | Type | Description | Default |
 | ---- | ---- | ----------- | ------- |
-| urgent | int | TTL for urgent queue | 9000  (2.5 hours) |
-| bulk | int | TTL for bulk queue | 43200 (12 hours) |
-| surplus | int | TTL for surplus queue | 172800 (48 hours) |
+| urgent | int | TTL for urgent queue -- data here is transmitted first, and moved to bulk when TTL expires | 9000  (2.5 hours) |
+| bulk | int | TTL for bulk queue -- data here is transmitted second, and moved to surplus when TTL expires | 43200 (12 hours) |
+| surplus | int | TTL for surplus queue -- data here is transmitted third, and deleted when TTL expire| 172800 (48 hours) |
+
+Data in all three queues is transmitted First In First Out (FIFO).
 
 ## SendOptions
 ```
