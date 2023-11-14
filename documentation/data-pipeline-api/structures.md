@@ -83,7 +83,7 @@ request = SendFileRequest(destination='ground', topic='logs',
 
 # ... use request ...
 ```
-A request to send a file via the Data Pipiline API
+A request to send a file via the Data Pipeline API
 
 ### Members
 
