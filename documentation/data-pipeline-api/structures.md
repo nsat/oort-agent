@@ -24,7 +24,10 @@ Unless otherwise specified, all time values are in seconds.
 | bulk | int | TTL for bulk queue -- data here is transmitted second, and moved to surplus when TTL expires | 43200 (12 hours) |
 | surplus | int | TTL for surplus queue -- data here is transmitted third, and deleted when TTL expires| 172800 (48 hours) |
 
-Data in all three queues is transmitted First In First Out (FIFO).
+Data in all three queues is transmitted First In First Out (FIFO). Below is a guideline for how to determine the appropriate TTL values for a given piece of data your payload is producing:
+1. Do you want this data type to skip the line and get downloaded ahead of the rest of your data? If no set urgent TTL to zero. If yes set urgent TTL to the number of seconds you want the skipping to be in effect.
+2. Does this data at some point become stale, i.e. substantially less valuable to you? If no, you don't need to set it, the default value will be applied. If yes, set bulk TTL to the number of seconds after which you consider it stale. 
+3. Once this data becomes stale do you still want to try to download it if there’s remaining downlink budget for your payload? If yes set surplus TTL to the number of seconds you wish to continue trying before the data is deleted. 
 
 ## SendOptions
 ```
