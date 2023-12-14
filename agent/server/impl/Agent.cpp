@@ -16,9 +16,6 @@
 #include <sys/statvfs.h>
 #include <sys/utsname.h>
 
-// gcc extension
-#include <ext/stdio_filebuf.h>
-
 #include <algorithm>
 #include <fstream>
 #include <string>
@@ -236,15 +233,7 @@ ResponseCode<SendFileResponse> Agent::send_file(const SendFileRequest &req) {
         fi = Files::file_info(src);
         fi.setId(id);
         TransferMeta tm = transfer_meta(req, fi);
-
-        // Use the gcc extension stdio_filebuf to get access
-        // to the underlying fd so we can fsync it.
-        // fsync is required so that the meta file doesn't end up
-        // empty when there is a hard shutdown soon after writing.
-        // https://jira.spire.com/browse/CPL-130
-        __gnu_cxx::stdio_filebuf<char> metabuf;
-        metabuf.open(destmeta, std::ios::out);
-        ostream meta(&metabuf);
+        sync_ofstream meta{destmeta};
 
         meta << to_jsonstr(tm);
         if (meta.fail()) {
@@ -252,7 +241,6 @@ ResponseCode<SendFileResponse> Agent::send_file(const SendFileRequest &req) {
             unlink(destmeta.c_str());
             throw runtime_error("error writing metadata");
         }
-        fsync(metabuf.fd());
     } catch (const runtime_error &e) {
         resp.code = Code::Bad_Request;
         resp.err.setMessage(OSError("Error getting info on " + src + ": "));

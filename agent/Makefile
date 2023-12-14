@@ -242,6 +242,10 @@ run: ${BUILD}/oort-server
 	mkdir /tmp/workdir.1 || true
 	${BUILD}/oort-server -l debug -w /tmp/workdir.1
 
+## gdb-run -- run under gdb
+gdb-run: ${BUILD}/oort-server
+	gdb -ex run --args ${BUILD}/oort-server -w /tmp/workdir.1 -l debug
+
 ## runcan -- run with can interface enabled
 runcan: ${BUILD}/oort-server
 	${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12 -N 51

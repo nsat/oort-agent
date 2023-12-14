@@ -356,3 +356,28 @@ bool sem_guard::trywait() {
     }
     return m_owned;
 }
+
+int sync_ofilebuf::sync() {
+    int ret = __gnu_cxx::stdio_filebuf<char>::sync();
+    if (is_open()) {
+        ret = fsync(fd());
+    }
+    return ret;
+}
+
+sync_ofilebuf::~sync_ofilebuf() {
+    std::ignore = sync();
+}
+
+sync_ofstream::sync_ofstream(const std::string& filename) {
+    init(&fb);
+    open(filename);
+}
+
+void sync_ofstream::open(const std::string& filename) {
+    if (!fb.open(filename, std::ios::out)) {
+        setstate(std::ios::failbit);
+    } else {
+        clear();
+    }
+}
