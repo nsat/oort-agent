@@ -39,6 +39,7 @@ SERVER_SRCS = \
 	${SERVER_BASE}/impl/AgentUAVCANClient.h \
 	${SERVER_BASE}/impl/AgentUAVCANServer.cpp \
 	${SERVER_BASE}/impl/AgentUAVCANServer.h \
+	${SERVER_BASE}/impl/Cache.h \
 	${SERVER_BASE}/impl/Cleaner.cpp \
 	${SERVER_BASE}/impl/Cleaner.h \
 	${SERVER_BASE}/impl/Config.cpp \
@@ -195,11 +196,11 @@ ${BUILD}/${SERVER_BASE}/dsdlc_generated: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_
 ${BUILD}/${SERVER_BASE}/api-server: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES) $(UAVCAN_DEPS)
 	rm -f $@
 	cd ${BUILD}/$(SERVER_BASE) && \
-		$(MAKE) api-server/fast
+		$(MAKE) api-server
 
 ${BUILD}/${SERVER_BASE}/test_agent: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES) $(UAVCAN_DEPS)
 	cd ${BUILD}/$(SERVER_BASE) && \
-		$(MAKE) test_agent/fast 
+		$(MAKE) test_agent
 
 ${BUILD}/oort-server: ${BUILD}/${SERVER_BASE}/api-server
 	cp ${BUILD}/${SERVER_BASE}/api-server $@
