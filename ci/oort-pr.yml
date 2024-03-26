@@ -1,0 +1,117 @@
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: teliaoss/github-pr-resource
+
+resources:
+  - name: pull-request
+    type: pull-request
+    icon: source-branch
+    source:
+      repository: nsat/oort-ta-dev
+      access_token: ((github.oort_red_personal_access_token))
+      paths:
+        - agent/
+        - installer/
+        - spec/
+
+  - name: dind-base
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
+
+task-error-handling: &task-error-handling
+# Extracts out the common error handling for the PR. Please note, if you include
+# this in your task, you have to have included a `get` step for the pull-request
+# resource.
+  on_failure:
+    put: pull-request
+    params:
+      path: pull-request
+      description: automated checks failed
+      status: failure
+  on_error:
+    put: pull-request
+    params:
+      path: pull-request
+      status: error
+
+jobs:
+    - name: lint
+      <<: *task-error-handling
+      plan:
+        - get: dind-base
+          params:
+            save: true
+        - get: pull-request
+          trigger: true
+          params:
+            list_changed_files: true
+            fetch_tags: true
+        - try:
+            task: version-check
+            image: dind-base
+            config:
+              platform: linux
+              container_limits: {}
+              inputs:
+                - name: pull-request
+              run:
+                path: /bin/grep
+                args:
+                  - VERSION
+                  - pull-request/.git/resource/changed_files
+            on_failure:
+              put: pull-request
+              params:
+                path: pull-request
+                comment: >
+                  NOTE: VERSION file not included in pull-request -- a new
+                  release will *not* be built
+        - task: tag-check
+          image: dind-base
+          config:
+            platform: linux
+            container_limits: {}
+            inputs:
+              - name: pull-request
+            run:
+              path: /bin/bash
+              dir: pull-request
+              args:
+                - -c
+                - "! grep VERSION .git/resource/changed_files || git --no-pager show --oneline -s refs/tags/v`cat VERSION`"
+          on_failure:
+            put: pull-request
+            params:
+              path: pull-request
+              status: FAILURE
+              description: no matching tag for version
+              comment: A new release version must have a corresponding tag
+        - task: lint
+          privileged: true
+          image: dind-base
+          config:
+            platform: linux
+            container_limits: {}
+            inputs:
+              - name: pull-request
+            run:
+              path: /bin/bash
+              args:
+                - -c
+                - |
+                  . /docker-lib.sh
+                  start_docker
+                  pip install cpplint
+                  cd pull-request
+                  make lint
+                  make unittest
+        - put: pull-request
+          params:
+            description: automated checks successful
+            path: pull-request
+            status: success

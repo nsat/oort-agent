@@ -15,6 +15,20 @@ using namespace std;
 using Catch::Matchers::StartsWith;
 using Catch::Matchers::Contains;
 
+class SecretAgent {
+ public:
+  void clear_metacache(Agent& a) {
+    a.metafile_cache.flush();
+  }
+  void clear_dircache(Agent& a) {
+    a.dir_cache.flush();
+  }
+  void disable_caches(Agent& a) {
+    a.dir_cache.disable();
+    a.metafile_cache.disable();
+  }
+};
+
 TEST_CASE("setup, send -> [fake collect/transfer/deliver] -> query -> retrieve",
           "[agent][api]") {
 
@@ -37,6 +51,7 @@ TEST_CASE("setup, send -> [fake collect/transfer/deliver] -> query -> retrieve",
 
         REQUIRE(cfg.parseOptions(argc, argv) == true);
         Agent a(cfg);
+        SecretAgent().disable_caches(a);
         REQUIRE(a.getWorkdir() == dtmp);
 
         InfoRequest req;

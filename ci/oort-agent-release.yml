@@ -1,0 +1,251 @@
+resources:
+  - name: repository
+    type: git
+    source:
+      username: ((github.oort_red_username))
+      password: ((github.oort_red_personal_access_token))
+      uri: https://github.com/nsat/oort-ta-dev
+      branch: master
+      path: VERSION
+      fetch_tags: true
+
+  - name: agent-x86
+    type: s3
+    source:
+      bucket: oort-artifacts
+      # regexp: x86/install-(.+).tar.gz
+      # initial-path: x86/install-0.0.0.tar.gz
+      regexp: x86/oort-agent-(.+)
+      initial-path: x86/oort-agent-0.0.0
+      access_key_id: ((s3-oort.access_key_id))
+      secret_access_key: ((s3-oort.access_key_secret))
+      region_name: us-west-2
+  - name: agent-armv7a
+    type: s3
+    source:
+      bucket: oort-artifacts
+      regexp: armv7a/install-(.*).tar.gz
+      initial-path: arm7a/install-0.0.0.tar.gz
+      access_key_id: ((s3-oort.access_key_id))
+      secret_access_key: ((s3-oort.access_key_secret))
+      region_name: us-west-2
+  - name: agent-cortexa9
+    type: s3
+    source:
+      bucket: oort-artifacts
+      regexp: cortexa9/install-(.*).tar.gz
+      initial-path: cortexa9/install-0.0.0.tar.gz
+      access_key_id: ((s3-oort.access_key_id))
+      secret_access_key: ((s3-oort.access_key_secret))
+      region_name: us-west-2
+  - name: agent-armv8
+    type: s3
+    source:
+      bucket: oort-artifacts
+      regexp: armv8/install-(.*).tar.gz
+      initial-path: armv8/install-0.0.0.tar.gz
+      access_key_id: ((s3-oort.access_key_id))
+      secret_access_key: ((s3-oort.access_key_secret))
+      region_name: us-west-2
+
+  - name: dind-base
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/base
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
+
+  - name: sdk-docker-armv7a
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv7a
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
+
+  - name: sdk-docker-cortexa9
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/cortexa9
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
+
+  - name: sdk-docker-armv8
+    type: docker-image
+    source:
+      repository: 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/armv8
+      aws_access_key_id: ((ecr_credentials/784407737194/us-west-2.aws_access_key_id))
+      aws_secret_access_key: ((ecr_credentials/784407737194/us-west-2.aws_secret_access_key))
+
+jobs:
+  - name: tag-check
+    plan:
+      - get: repository
+        trigger: true
+      - get: dind-base
+        params: {save: true}
+      - task: tag-check
+        image: dind-base
+        config:
+          platform: linux
+          container_limits: {}
+          inputs:
+            - name: repository
+          run:
+            path: /bin/bash
+            dir: repository
+            args:
+              - -c
+              - >
+                test `git describe --tags` = v`cat VERSION` || 
+                (echo ERROR: git tag does not match VERSION file ;
+                 echo tag is `git describe --tags` ;
+                 echo VERSION file is `cat VERSION` ;
+                 false)
+
+  - name: build-agent-x86
+    plan:
+      - get: repository
+        passed: [tag-check]
+        trigger: true
+      - get: dind-base
+        params: {save: true}
+      - task: build
+        privileged: true
+        image: dind-base
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+          outputs:
+            - name: artifact
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                . /docker-lib.sh
+                start_docker
+                VERSION=$(cat repository/VERSION)
+                ( cd repository/agent;  make )
+                cp repository/agent/build/oort-server artifact/oort-agent-$VERSION
+
+      - put: agent-x86
+        params:
+          file: artifact/oort-agent-*
+
+  - name: build-agent-armv7a
+    plan:
+      - get: repository
+        passed: [tag-check]
+        trigger: true
+      - get: dind-base
+        params: {save: true}
+      - get: sdk-docker-armv7a
+        params: {save: true}
+      - task: build
+        privileged: true
+        image: dind-base
+        params:
+          build_arch: armv7a
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+            - name: sdk-docker-armv7a
+              path: sdk
+          outputs:
+            - name: artifact
+          run:
+            path: /bin/bash
+            args:
+              - -xc
+              - |
+                . /docker-lib.sh
+                start_docker
+                docker load -i sdk/image
+                docker image tag `cat sdk/image-id` `cat sdk/repository`:`cat sdk/tag`
+                VERSION=$(cat repository/VERSION)
+                ( cd repository/installer;  make install-${build_arch}.tar.gz )
+                cp repository/installer/install-${build_arch}.tar.gz artifact/install-$VERSION.tar.gz
+
+      - put: agent-armv7a
+        params:
+          file: artifact/install-*
+
+  - name: build-agent-cortexa9
+    plan:
+      - get: repository
+        passed: [tag-check]
+        trigger: true
+      - get: dind-base
+        params: {save: true}
+      - get: sdk-docker-cortexa9
+        params: {save: true}
+      - task: build
+        privileged: true
+        image: dind-base
+        params:
+          build_arch: cortexa9
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+            - name: sdk-docker-cortexa9
+              path: sdk
+          outputs:
+            - name: artifact
+          run:
+            path: /bin/bash
+            args:
+              - -xc
+              - |
+                . /docker-lib.sh
+                start_docker
+                docker load -i sdk/image
+                docker image tag `cat sdk/image-id` `cat sdk/repository`:`cat sdk/tag`
+                VERSION=$(cat repository/VERSION)
+                ( cd repository/installer;  make install-${build_arch}.tar.gz )
+                cp repository/installer/install-${build_arch}.tar.gz artifact/install-$VERSION.tar.gz
+
+      - put: agent-cortexa9
+        params:
+          file: artifact/install-*
+
+  - name: build-agent-armv8
+    plan:
+      - get: repository
+        passed: [tag-check]
+        trigger: true
+      - get: dind-base
+        params: {save: true}
+      - get: sdk-docker-armv8
+        params: {save: true}
+      - task: build
+        privileged: true
+        image: dind-base
+        params:
+          build_arch: armv8
+        config:
+          platform: linux
+          inputs:
+            - name: repository
+            - name: sdk-docker-armv8
+              path: sdk
+          outputs:
+            - name: artifact
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                . /docker-lib.sh
+                start_docker
+                docker load -i sdk/image
+                docker image tag `cat sdk/image-id` `cat sdk/repository`:`cat sdk/tag`
+                VERSION=$(cat repository/VERSION)
+                ( cd repository/installer;  make install-${build_arch}.tar.gz )
+                cp repository/installer/install-${build_arch}.tar.gz artifact/install-$VERSION.tar.gz
+
+      - put: agent-armv8
+        params:
+          file: artifact/install-*
