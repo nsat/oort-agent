@@ -297,9 +297,6 @@ cmake: ${BUILD}/${SERVER_BASE}/Makefile $(ALL_OVERLAY_FILES)
 
 .PHONY: cross
 
-BUILD_DOCKER_BASE = 784407737194.dkr.ecr.us-west-2.amazonaws.com/oort-builder/
-# BUILD_DOCKER_BASE = sdk-
-
 ## cross - run the build for a cross-compiler, using the cross-compiler builder docker
 cross:
 	$(MAKE) BUILD=build-cross-${ARCH} autogen
