@@ -8,7 +8,11 @@
 see SendFileRequest for usage example
 ```
 
-Time-to-live (TTL) parameters for a sent item
+OORT has three queues for any data topic: urgent, bulk, and surplus. Data in the urgent queue stage is transmitted first, followed by data in the bulk queue stage, followed by data in the surplus queue stage. 
+
+The developer may set a file's Time-to-live (TTL) for each stage individually. For lower priority data it is possible to skip the urgent stage and add the data directly to bulk, or skip both the urgent and bulk stages and add directly to surplus.
+
+Time-to-live (TTL) parameters for a sent item are described below.  
 
 ### Members
 
@@ -16,9 +20,14 @@ Unless otherwise specified, all time values are in seconds.
 
 | Name | Type | Description | Default |
 | ---- | ---- | ----------- | ------- |
-| urgent | int | TTL for urgent queue | 9000  (2.5 hours) |
-| bulk | int | TTL for bulk queue | 43200 (12 hours) |
-| surplus | int | TTL for bulk queue | 172800 (48 hours) |
+| urgent | int | TTL for urgent queue -- data here is transmitted first, and moved to bulk when TTL expires | 9000  (2.5 hours) |
+| bulk | int | TTL for bulk queue -- data here is transmitted second, and moved to surplus when TTL expires | 43200 (12 hours) |
+| surplus | int | TTL for surplus queue -- data here is transmitted third, and deleted when TTL expires| 172800 (48 hours) |
+
+Data in all three queues is transmitted First In First Out (FIFO). Below is a guideline for how to determine the appropriate TTL values for a given piece of data your payload is producing:
+1. Do you want this data type to skip the line and get downloaded ahead of the rest of your data? If no set urgent TTL to zero. If yes set urgent TTL to the number of seconds you want the skipping to be in effect.
+2. Does this data at some point become stale, i.e. substantially less valuable to you? If no, you don't need to set it, the default value will be applied. If yes, set bulk TTL to the number of seconds after which you consider it stale. 
+3. Once this data becomes stale do you still want to try to download it if there’s remaining downlink budget for your payload? If yes set surplus TTL to the number of seconds you wish to continue trying before the data is deleted. 
 
 ## SendOptions
 ```
@@ -83,7 +92,7 @@ request = SendFileRequest(destination='ground', topic='logs',
 
 # ... use request ...
 ```
-A request to send a file via the Data Pipiline API
+A request to send a file via the Data Pipeline API
 
 ### Members
 

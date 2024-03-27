@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <string>
 #include <regex>  // NOLINT(build/c++11)
 #include <system_error>  // NOLINT(build/c++11)
@@ -58,6 +59,7 @@ Agent::Agent(const AgentConfig &cfg) : cleaner(this) {
     cleaner.scheduleCleanup();
 
     uavcan_client = nullptr;
+    meta_cache.set_fn(bind(&Agent::read_transfer_meta, this, placeholders::_1));
 }
 
 Agent::~Agent() {
@@ -109,29 +111,29 @@ ResponseCode<AvailableFilesResponse> Agent::query_available(
  * correct maximum length.
  */
 vector<FileInfo> Agent::files_info(const string &dir, const string &topic) {
-  auto meta_files = Files::list_files(dir, META_EXT);
+  auto meta_files = metafile_cache.get(dir, bind(&Files::list_files, placeholders::_1, META_EXT));
   vector<FileInfo> flist;
   for (auto it = meta_files.begin(); it != meta_files.end(); ++it) {
     try {
-      auto tm = read_transfer_meta(dir + "/" + *it);
-      // check topic
-      if (tm.getTopic() != topic) {
-          continue;
-      }
-      auto fi = Files::file_info(data_file(dir + "/" + *it));
-      // verify crc between stored and calculated
-      if (tm.getFileInfo().getCrc32() != fi.getCrc32()) {
-          Log::warn("CRC mismatch on ?; endeadening",  chop(*it, META_EXT));
-          endeaden(dir + "/" + *it);
-          continue;
-      }
-      flist.push_back(tm.getFileInfo());
+        auto tm = read_transfer_meta_cached(dir + "/" + *it);
+        // check topic
+        if (tm.getTopic() != topic) {
+            continue;
+        }
+        auto fi = Files::file_info(data_file(dir + "/" + *it));
+        // verify crc between stored and calculated
+        if (tm.getFileInfo().getCrc32() != fi.getCrc32()) {
+            Log::warn("CRC mismatch on ?; endeadening",  chop(*it, META_EXT));
+            endeaden(dir + "/" + *it);
+            continue;
+        }
+        flist.push_back(tm.getFileInfo());
     } catch (const runtime_error &e) {
-      // errors from file_info could be a missing file, or a non-file file
-      // error reading the transfer meta could be a corrupt or non-schema
-      // file
-      Log::error("Error in files_info handling ?: ?", *it, e.what());
-      endeaden(dir + "/" + *it);
+        // errors from file_info could be a missing file, or a non-file file
+        // error reading the transfer meta could be a corrupt or non-schema
+        // file
+        Log::error("Error in files_info handling ?: ?", *it, e.what());
+        endeaden(dir + "/" + *it);
     }
     if (flist.size() > max_query) {
         break;
@@ -150,6 +152,10 @@ TransferMeta Agent::transfer_meta(const SendFileRequest &req, const FileInfo &fi
     tm.setFileInfo(fi);
     tm.setSendOptions(req.getOptions());
     return tm;
+}
+
+TransferMeta Agent::read_transfer_meta_cached(const string &file) {
+    return meta_cache.get(file);
 }
 
 TransferMeta Agent::read_transfer_meta(const string &file) {
@@ -190,7 +196,7 @@ ResponseCode<TransferMeta> Agent::meta(const std::string &uuid) {
     ResponseCode<TransferMeta> resp;
 
     try {
-        resp.result = read_transfer_meta(transfer_dir + "/" + uuid + META_EXT);
+        resp.result = read_transfer_meta_cached(transfer_dir + "/" + uuid + META_EXT);
         resp.code = Code::Ok;
         return resp;
     }
@@ -233,8 +239,8 @@ ResponseCode<SendFileResponse> Agent::send_file(const SendFileRequest &req) {
         fi = Files::file_info(src);
         fi.setId(id);
         TransferMeta tm = transfer_meta(req, fi);
+        sync_ofstream meta{destmeta};
 
-        ofstream meta(destmeta);
         meta << to_jsonstr(tm);
         if (meta.fail()) {
             Log::error("Error writing metadata file ?: ?", destmeta, OSError());
@@ -286,7 +292,7 @@ ResponseCode<FileInfo> Agent::retrieve_file(
     }
 
     try {
-        auto tm = read_transfer_meta(src_meta);
+        auto tm = read_transfer_meta_cached(src_meta);
         move_file(srcfile, dest, tm.getFileInfo());
         resp.result = FileInfo(tm.getFileInfo());
     } catch (const system_error &err) {
@@ -469,8 +475,8 @@ ResponseCode<InfoResponse> Agent::collector_info(InfoRequest &req) {
     resp.result.setTopics(m_allowedTopics);
 
     InfoResponse_available available;
-    available.setFiles(Files::file_names(transfer_dir));
-    available.setDead(Files::file_names(deadletter_dir));
+    available.setFiles(dir_cache.get(transfer_dir));
+    available.setDead(dir_cache.get(deadletter_dir));
     resp.result.setAvailable(available);
 
     resp.code = Code::Ok;

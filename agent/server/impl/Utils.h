@@ -8,7 +8,10 @@
 #pragma once
 
 #include <semaphore.h>
+#include <unistd.h>
+#include <ext/stdio_filebuf.h>
 #include <string>
+#include <ostream>
 
 #include "onion/onion.hpp"
 #include "onion/response.hpp"
@@ -93,6 +96,36 @@ class sem_guard final {
     ~sem_guard();
     bool wait();
     bool trywait();
+};
+
+/**
+ * @brief filebuf variant that fsyncs in addition to flushing buffers
+ * and syncs on destruction.
+ *
+ * Use the gcc extension stdio_filebuf to get access
+ * to the underlying fd so we can fsync it.
+ * fsync is required so that the meta file doesn't end up
+ * empty when there is a hard shutdown soon after writing.
+ * https://jira.spire.com/browse/CPL-130
+ */
+class sync_ofilebuf : public __gnu_cxx::stdio_filebuf<char> {
+ protected:
+    virtual int sync();
+ public:
+    ~sync_ofilebuf();
+};
+
+/**
+ * @brief ofstream variant that uses a \ref sync_ofilebuf to ensure
+ * data is fsynced to disk when closing.
+ *
+ */
+class sync_ofstream : public std::ofstream {
+ protected:
+    sync_ofilebuf fb;
+ public:
+    explicit sync_ofstream(const std::string& filename);
+    void open(const std::string& filename);
 };
 
 std::string mkUUID();
