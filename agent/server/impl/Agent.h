@@ -16,6 +16,7 @@
 #include <regex>  // NOLINT(build/c++11)
 
 #include "AgentUAVCANClient.h"
+#include "Cache.h"
 #include "Cleaner.h"
 #include "Config.h"
 #include "Adcs.h"
@@ -23,6 +24,7 @@
 #include "AdcsCommandRequest.h"
 #include "AdcsCommandResponse.h"
 #include "AvailableFilesResponse.h"
+#include "Files.h"
 #include "FileInfo.h"
 #include "InfoRequest.h"
 #include "InfoResponse.h"
@@ -51,6 +53,13 @@ class Agent {
         return chop(metafile, META_EXT) + DATA_EXT;
     }
     const std::regex topic_re = std::regex("^[-_[:alnum:]]+$", std::regex_constants::extended);
+    // file caches
+    Cache<std::vector<std::string>> dir_cache{"Directory", Files::file_names};
+    // get function is Files::list_files
+    Cache<std::vector<std::string>> metafile_cache{"Metafile"};
+    // get function is Agent::read_transfer_meta
+    Cache<TransferMeta> meta_cache{"Metainfo", 10000};
+
     // config values
     std::string workdir;
     int max_query = 50;
@@ -71,6 +80,7 @@ class Agent {
     void create_dirs(const std::vector<std::string> &dirs);
 
     std::vector<FileInfo> files_info(const std::string &dir, const std::string &topic);
+    TransferMeta read_transfer_meta_cached(const std::string &file);
     TransferMeta read_transfer_meta(const std::string &file);
     TransferMeta transfer_meta(const SendFileRequest &req, const FileInfo &fi);
 
@@ -95,6 +105,9 @@ class Agent {
     Agent& operator=(const Agent&) = delete;
     Agent(const Agent&&) = delete;
     Agent& operator=(const Agent&&) = delete;
+
+    // for testing
+    friend class SecretAgent;
 
  public:
     explicit Agent(const AgentConfig &cfg);

@@ -10,14 +10,19 @@
 #include "Utils.h"
 #include <syslog.h>
 #include <time.h>
+#include <atomic>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
 namespace Log {
 thread_local std::string thread_name = "main";
+thread_local std::string thread_desc;
+thread_local int thread_num = -1;
+atomic_int thread_count{0};
 
 namespace {
     // private functions/data
@@ -38,7 +43,7 @@ namespace {
         }
     }
 
-    void log(const levels level, const string &msg, const string &param1, const string &param2) {
+    void log(const levels level, const string &msg, vector<LogArg> params) {
         if (level >= l_level) {
             stringstream s_out;
 
@@ -47,18 +52,15 @@ namespace {
             }
 
             s_out << levelNames[level] << " ";
-            s_out << "[" << thread_name << "] ";
+            s_out << "[" << getThreadDesc() << "] ";
 
-            auto mstart = 0;
+            auto mstart = 0, ix = 0;
             auto m = msg.find('?', mstart);
-            if (m != string::npos) {
-                s_out << msg.substr(mstart, m) << param1;
+            while (m != string::npos && ix < params.size()) {
+                s_out << msg.substr(mstart, m-mstart) << params[ix];
                 mstart = m + 1;
-            }
-            m = msg.find('?', mstart);
-            if (m != string::npos) {
-                s_out << msg.substr(mstart, m-mstart) << param2;
-                mstart = m + 1;
+                ++ix;
+                m = msg.find('?', mstart);
             }
             s_out << msg.substr(mstart);
 
@@ -73,21 +75,20 @@ namespace {
     }
 }  // namespace
 
-void debug(const string &msg, const LogArg &param1, const LogArg &param2) {
-    log(Debug, msg, param1, param2);
+#define LOG_DEFN(LEVEL, LOGLEVEL) \
+void LEVEL(const string &msg, \
+        const LogArg &param1, const LogArg &param2, \
+        const LogArg &param3, const LogArg &param4, \
+        const LogArg &param5, const LogArg &param6 \
+        ) { \
+    log(LOGLEVEL, msg, vector<LogArg>{param1, param2, param3, param4, param5, param6}); \
 }
 
-void info(const string &msg, const LogArg &param1, const LogArg &param2) {
-    log(Info, msg, param1, param2);
-}
-
-void warn(const string &msg, const LogArg &param1, const LogArg &param2) {
-    log(Warn, msg, param1, param2);
-}
-
-void error(const string &msg, const LogArg &param1, const LogArg &param2) {
-    log(Error, msg, param1, param2);
-}
+LOG_DEFN(debug, Debug);
+LOG_DEFN(info, Info);
+LOG_DEFN(warn, Warn);
+LOG_DEFN(error, Error);
+#undef LOG_DEFN
 
 void setLevel(const levels l) {
     l_level = l;
@@ -107,6 +108,19 @@ void setSyslog(const std::string &ident) {
 
 void setThreadName(const std::string &name) {
     thread_name = name;
+    setThreadDesc();
+}
+
+void setThreadDesc() {
+    thread_desc = thread_name + ":" + to_string(thread_num);
+}
+
+const std::string getThreadDesc() {
+    if (thread_num == -1) {
+        thread_num = thread_count.fetch_add(1);
+        setThreadDesc();
+    }
+    return thread_desc;
 }
 
 }  // namespace Log

@@ -7,9 +7,9 @@
  */
 #pragma once
 
+#include <sys/stat.h>
 #include <string>
 #include <vector>
-#include <sys/stat.h>
 
 #include "FileInfo.h"
 

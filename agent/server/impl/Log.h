@@ -37,16 +37,23 @@ namespace Log {
     const std::vector<int> syslogLevels({LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERR});
     const std::vector<std::string> levelNames({"debug", "info", "warn", "error"});
 
-    void debug(const std::string &msg,
-        const LogArg &param1 = EMPTY, const LogArg &param2 = EMPTY);
-    void info(const std::string &msg,
-        const LogArg &param1 = EMPTY, const LogArg &param2 = EMPTY);
-    void warn(const std::string &msg,
-        const LogArg &param1 = EMPTY, const LogArg &param2 = EMPTY);
-    void error(const std::string &msg,
-        const LogArg &param1 = EMPTY, const LogArg &param2 = EMPTY);
+#define LOG_DECL(LEVEL) \
+    void LEVEL(const std::string &msg, \
+        const LogArg &param1 = EMPTY, const LogArg &param2 = EMPTY, \
+        const LogArg &param3 = EMPTY, const LogArg &param4 = EMPTY, \
+        const LogArg &param5 = EMPTY, const LogArg &param6 = EMPTY \
+        )
+
+    LOG_DECL(debug);
+    LOG_DECL(info);
+    LOG_DECL(warn);
+    LOG_DECL(error);
+#undef LOG_DECL
+
     void setLevel(const levels l);
     void setOut(std::ostream &out);
     void setSyslog(const std::string &ident);
     void setThreadName(const std::string &name);
+    void setThreadDesc();
+    const std::string getThreadDesc();
 }  // namespace Log
