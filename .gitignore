@@ -4,6 +4,7 @@ __pycache__/
 build/
 build-cross*/
 dist/
+.idea/
 
 *.swp
 doc/out

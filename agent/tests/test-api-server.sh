@@ -97,6 +97,14 @@ id=$(echo "$blob" | jq -r .UUID)
 jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .file_info.crc32 $crc "Crc-32"
 test -e $WORKDIR/transfers/$id.data.oort || (echo "transfer file not found" && false)
 
+# Tags test
+options='{"reliable": true, "tags": {"token": "12345"}}'
+request="$(jq -n --arg sendfile $send_file --argjson options $options '.filepath=$sendfile|.destination="ground"|.topic="test"|.options=$options')"
+cget blob http://localhost:2005/sdk/v1/send_file -H "Content-type: application/json" -d "$request"
+id=$(echo "$blob" | jq -r .UUID)
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .file_info.send_options.tags.token "12345"
+test -e $WORKDIR/transfers/$id.data.oort || (echo "transfer file not found" && false)
+
 # tfrs
 cget blob http://localhost:2005/sdk/v1/tfrs
 jq_assert "$blob" .utc_time 1234

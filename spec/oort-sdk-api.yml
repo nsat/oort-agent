@@ -158,6 +158,16 @@ components:
           description: TTL in seconds for surplus items
           default: 172800
 
+    Tags:
+      description: a structure for optional file tags
+      properties:
+        token:
+          type: string
+          description: the ground-side reference id associated with the files being sent
+          default: null
+      additionalProperties:
+        type: string
+
     SendOptions:
       description: options to apply to a send request
       properties:
@@ -167,6 +177,8 @@ components:
           type: boolean
           description: whether to send an item reliably, i.e., with retries
           default: true
+        tags:
+            "$ref": "#/components/schemas/Tags"
 
     SendFileRequest:
       x-body-name: send_file_request
@@ -216,7 +228,7 @@ components:
           type: object
           additionalProperties:
               type: string
-        
+
     AvailableFilesResponse:
       title: AvailableFilesResponse
       required: [files]

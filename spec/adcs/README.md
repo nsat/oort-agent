@@ -5,6 +5,6 @@ adcs-v3.csv - dump from [LEMADCS_API_3 google doc](https://docs.google.com/sprea
 lemadcs_adcs_hk.csv - export of the lemadcs_adcs_hk structure from "API
 Planner" sheet of the above doc
 
-ml_spec.py - processes the above exports to produce a dsdk definition, oapi
+mk_spec.py - processes the above exports to produce a dsdk definition, oapi
 schema definition, or python method to copy all the fields from the spoc
 result.

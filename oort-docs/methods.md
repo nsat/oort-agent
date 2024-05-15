@@ -47,9 +47,11 @@ print("File sent successfully, UUID is {}".format(resp.uuid)))
     send_options_t *send_opt;
     send_file_response_t *resp;
     ttl_params_t *ttl;
-
+    tags_t *tags;
+    
     ttl = ttl_params_create(urgent, bulk, surplus);
-    send_opt = send_options_create(ttl, reliable);
+    tags = tags_create(token)
+    send_opt = send_options_create(ttl, reliable, tags);
 
     req = send_file_request_create(dest, filename, topic, send_opt);
 

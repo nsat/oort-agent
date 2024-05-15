@@ -20,6 +20,21 @@ Unless otherwise specified, all time values are in seconds.
 | bulk | int | TTL for bulk queue | 43200 (12 hours) |
 | surplus | int | TTL for bulk queue | 172800 (48 hours) |
 
+## Tags
+
+```
+see SendFileRequest for usage example
+```
+
+Optional tags to apply to files when sending a file
+
+### Members
+
+| Name | Type | Description | Default |
+| ---- | ---- | ----------- | ------- |
+| token | string | optional, an internal token associated with the capture window, tagging files generated with their | none |
+
+
 ## SendOptions
 ```
 see SendFileRequest for usage example
@@ -34,6 +49,7 @@ Options to apply to a send request
 | ---- | ---- | ----------- | ------- |
 | TTLParams | TTLParams | time-to-live parameters | see [TTLParams](#ttlparams) |
 | reliable | boolean | whether to send an item reliable, i.e., with retries | true |
+| tags |  Tags | optional structure used to store available file tags  | none |
 
 ## SendFileRequest
 
@@ -50,6 +66,7 @@ int bulk = 43200;
 int surplus = 172800;
 /* for SendOptions */
 int reliable = 1;
+string token = "123456";
 /* for SendFileRequest */
 /* NB: all the strings are owned by the reqeust object and will be freed
    with it so they must be copied if they come from storage that cannot
@@ -61,7 +78,8 @@ char *topic = strdup("logs");
 char *filename = strdup("/file/to/send");
 
 ttl = ttl_params_create(urgent, bulk, surplus);
-send_options = send_options_create(ttl, reliable);
+tags = tags_params_create(token);
+send_options = send_options_create(ttl, reliable, tags);
 request = send_file_request_create(dest, filename, topic, send_options);
 
 /* ... use request ... */
@@ -71,15 +89,16 @@ send_file_request_free(request);  /* frees all child structures */
 
 ```python
 from oort_sdk_client.models import (
-    TTLParams, SendOptions, SendFileRequest
+    Tags, TTLParams, SendOptions, SendFileRequest
 )
 
 
 ttl = TTLParams(urgent=9000, bulk=43200, surplus=172800)
-send_options = SendOptions(ttl_params=ttl, reliable=True)
+tags = Tags(token="123456")
+send_options = SendOptions(ttl_params=ttl, reliable=True, tags=tags)
 request = SendFileRequest(destination='ground', topic='logs',
                           filepath='/file/to/send',
-                          options=send_options))
+                          options=send_options)
 
 # ... use request ...
 ```
