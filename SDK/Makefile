@@ -1,4 +1,4 @@
-OPENAPI_IMAGE=openapitools/openapi-generator-cli:v4.2.3
+OPENAPI_IMAGE=openapitools/openapi-generator-cli:v7.6.0
 .PHONY: lint
 
 SPECS=oort-collector-api oort-sdk-api
@@ -13,7 +13,7 @@ collector: python-collector-client/README.md
 ROOT=$(realpath ${CURDIR}/..)
 CUR=$(notdir ${CURDIR})
 
-lint: 
+lint:
 	@echo ok
 
 $(CLIENTS): %: %-sdk-client/README.md
