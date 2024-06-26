@@ -160,11 +160,6 @@ components:
 
     Tags:
       description: a structure for optional file tags
-      properties:
-        token:
-          type: string
-          description: the ground-side reference id associated with the files being sent
-          default: null
       additionalProperties:
         type: string
 

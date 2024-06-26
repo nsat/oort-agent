@@ -10,6 +10,8 @@ OUTPUT=/tmp/test.$$/app.out
 APP=build/oort-server
 SHIM=tests/utils/unit_shim.py
 
+SEND_FILE=/tmp/ubbbu
+
 mkdir -p $WORKDIR
 
 echo workdir is $WORKDIR
@@ -54,6 +56,10 @@ cget() {
     eval $var='$(curl -Ss "$@")'
 }
 
+reset_send_file () {
+    echo "hello, world" > $SEND_FILE
+}
+
 if [ "$FULL" == "y" ]; then
 _FULL="--show-leak-kinds=all"
 fi
@@ -80,29 +86,40 @@ while ! nc localhost 2005 < /dev/null ; do
 done
 
 cget blob http://localhost:2005/collector/v1/info -X POST
-jq_assert "$blob" .sysinfo.version 1.3.2 "Version check"
+jq_assert "$blob" .sysinfo.version 1.5.0 "Version check"
 jq_assert "$blob" .sysinfo.workdir $WORKDIR/transfers "Working directory"
 
 diskfree=$(df -B1 $WORKDIR | awk 'NR~2 {print $4}')
 jq_assert "$blob" .sysinfo.diskfree $diskfree "Disk free"
 
-send_file=/tmp/ubbbu
-echo "hello, world" > $send_file
+reset_send_file
+crc=$(python -c 'print("%0x" % (0xffffffff&__import__("zlib").crc32(__import__("sys").stdin.read().encode())))' < $SEND_FILE)
 
-crc=$(python -c 'print("%0x" % (0xffffffff&__import__("zlib").crc32(__import__("sys").stdin.read().encode())))' < $send_file)
-
-request="$(jq -n --arg sendfile $send_file '.filepath=$sendfile|.destination="ground"|.topic="test"')"
+# Tags test: no tags
+request="$(jq -n --arg sendfile $SEND_FILE '.filepath=$sendfile|.destination="ground"|.topic="test"')"
 cget blob http://localhost:2005/sdk/v1/send_file -H "Content-type: application/json" -d "$request"
 id=$(echo "$blob" | jq -r .UUID)
 jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .file_info.crc32 $crc "Crc-32"
 test -e $WORKDIR/transfers/$id.data.oort || (echo "transfer file not found" && false)
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .file_info.send_options.tags.token null
 
-# Tags test
-options='{"reliable": true, "tags": {"token": "12345"}}'
-request="$(jq -n --arg sendfile $send_file --argjson options $options '.filepath=$sendfile|.destination="ground"|.topic="test"|.options=$options')"
+# Tags test: multiple tags
+reset_send_file
+options='{"reliable": true, "tags": {"token1": "12345", "token2": "67890"}}'
+request="$(jq -n --arg sendfile "$SEND_FILE" --argjson options "$options" '.filepath=$sendfile|.destination="ground"|.topic="test"|.options=$options')"
 cget blob http://localhost:2005/sdk/v1/send_file -H "Content-type: application/json" -d "$request"
 id=$(echo "$blob" | jq -r .UUID)
-jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .file_info.send_options.tags.token "12345"
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .send_options.tags.token1 "12345"
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .send_options.tags.token2 "67890"
+test -e $WORKDIR/transfers/$id.data.oort || (echo "transfer file not found" && false)
+
+# Tags test: single tag
+reset_send_file
+options='{"reliable": true, "tags": {"token": "12345"}}'
+request="$(jq -n --arg sendfile "$SEND_FILE" --argjson options "$options" '.filepath=$sendfile|.destination="ground"|.topic="test"|.options=$options')"
+cget blob http://localhost:2005/sdk/v1/send_file -H "Content-type: application/json" -d "$request"
+id=$(echo "$blob" | jq -r .UUID)
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .send_options.tags.token "12345"
 test -e $WORKDIR/transfers/$id.data.oort || (echo "transfer file not found" && false)
 
 # tfrs
@@ -138,5 +155,6 @@ if ! grep -q "definitely lost: 0 bytes in 0 blocks" $OUTPUT ; then
     exit 1
 else
     echo no errors from valgrind
+    echo "All tests passed"
     exit 0
 fi

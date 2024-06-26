@@ -57,6 +57,7 @@ Options to apply to a send request
 #include "SdkAPI.h"
 
 ttl_params_t *ttl;
+list_t *tags;
 send_options_t *send_options;
 send_file_request_t *request;
 
@@ -66,19 +67,18 @@ int bulk = 43200;
 int surplus = 172800;
 /* for SendOptions */
 int reliable = 1;
-string token = "123456";
 /* for SendFileRequest */
-/* NB: all the strings are owned by the reqeust object and will be freed
+/* NB: all the strings are owned by the request object and will be freed
    with it so they must be copied if they come from storage that cannot
    be freed, like static strings or argv.
  */
-
 char *dest = strdup("ground");
 char *topic = strdup("logs");
 char *filename = strdup("/file/to/send");
 
 ttl = ttl_params_create(urgent, bulk, surplus);
-tags = tags_params_create(token);
+tags = list_create();
+list_addElement(tags, keyValuePair_create(strdup("token"), strdup("123456")));
 send_options = send_options_create(ttl, reliable, tags);
 request = send_file_request_create(dest, filename, topic, send_options);
 
@@ -89,13 +89,12 @@ send_file_request_free(request);  /* frees all child structures */
 
 ```python
 from oort_sdk_client.models import (
-    Tags, TTLParams, SendOptions, SendFileRequest
+    TTLParams, SendOptions, SendFileRequest
 )
 
 
 ttl = TTLParams(urgent=9000, bulk=43200, surplus=172800)
-tags = Tags(token="123456")
-send_options = SendOptions(ttl_params=ttl, reliable=True, tags=tags)
+send_options = SendOptions(ttl_params=ttl, reliable=True, tags={"token": "123456"})
 request = SendFileRequest(destination='ground', topic='logs',
                           filepath='/file/to/send',
                           options=send_options)
