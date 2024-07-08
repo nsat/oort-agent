@@ -86,7 +86,7 @@ while ! nc localhost 2005 < /dev/null ; do
 done
 
 cget blob http://localhost:2005/collector/v1/info -X POST
-jq_assert "$blob" .sysinfo.version 1.5.0 "Version check"
+jq_assert "$blob" .sysinfo.version 1.5.1 "Version check"
 jq_assert "$blob" .sysinfo.workdir $WORKDIR/transfers "Working directory"
 
 diskfree=$(df -B1 $WORKDIR | awk 'NR~2 {print $4}')
@@ -121,6 +121,18 @@ cget blob http://localhost:2005/sdk/v1/send_file -H "Content-type: application/j
 id=$(echo "$blob" | jq -r .UUID)
 jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .send_options.tags.token "12345"
 test -e $WORKDIR/transfers/$id.data.oort || (echo "transfer file not found" && false)
+
+# Delivery hints in the send options
+reset_send_file
+options='{"reliable": true, "delivery_hints": {"mode": "644", "dest_path": "/persist/bin/test.txt"}, "tags": {"upload_id": "12345"}}'
+request="$(jq -n --arg sendfile "$SEND_FILE" --argjson options "$options" '.filepath=$sendfile|.destination="ground"|.topic="test"|.options=$options')"
+cget blob http://localhost:2005/sdk/v1/send_file -H "Content-type: application/json" -d "$request"
+id=$(echo "$blob" | jq -r .UUID)
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .send_options.tags.upload_id "12345"
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .send_options.delivery_hints.mode "644"
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .send_options.delivery_hints.dest_path "/persist/bin/test.txt"
+test -e $WORKDIR/transfers/$id.data.oort || (echo "transfer file not found" && false)
+
 
 # tfrs
 cget blob http://localhost:2005/sdk/v1/tfrs

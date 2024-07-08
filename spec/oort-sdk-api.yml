@@ -158,6 +158,21 @@ components:
           description: TTL in seconds for surplus items
           default: 172800
 
+    DeliveryHints:
+      description: Delivery hints used to inform the reveiver about the expected destination of the file
+      required: [dest_path, mode]
+      additionalProperties:
+        type: string
+      properties:
+        dest_path:
+          type: string
+          description: Path of the file on the destination filesystem
+        mode:
+          type: string
+          description: >
+            File mode in octal form. For example: "760" means that the user
+            can read+write+execute, the group can read+write, and others have no access
+
     Tags:
       description: a structure for optional file tags
       additionalProperties:
@@ -174,6 +189,8 @@ components:
           default: true
         tags:
             "$ref": "#/components/schemas/Tags"
+        delivery_hints:
+            "$ref": "#/components/schemas/DeliveryHints"
 
     SendFileRequest:
       x-body-name: send_file_request
@@ -223,6 +240,8 @@ components:
           type: object
           additionalProperties:
               type: string
+        delivery_hints:
+            "$ref": "#/components/schemas/DeliveryHints"
 
     AvailableFilesResponse:
       title: AvailableFilesResponse
