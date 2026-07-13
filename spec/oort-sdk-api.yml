@@ -5,7 +5,7 @@ info:
   contact:
       name: Spire Global, Inc.
       url: https://developers.spire.com/oort-docs/index.html
-  version: '1.3'
+  version: '1.5'
 servers:
   - url: http://localhost:2005/sdk/v1
 paths:
@@ -157,6 +157,12 @@ components:
           type: integer
           description: TTL in seconds for surplus items
           default: 172800
+      x-example-json: >
+        {
+          "urgent": 100,
+          "bulk": 200,
+          "surplus": 300
+        }
 
     DeliveryHints:
       description: Delivery hints used to inform the reveiver about the expected destination of the file
@@ -172,11 +178,22 @@ components:
           description: >
             File mode in octal form. For example: "760" means that the user
             can read+write+execute, the group can read+write, and others have no access
+      x-example-json: >
+        {
+          "dest_path": "/foo/bar",
+          "mode": "640",
+          "an": "additionalProperty"
+        }
 
     Tags:
       description: a structure for optional file tags
       additionalProperties:
         type: string
+      x-example-json: >
+        {
+          "foo": "bar",
+          "thud": "quux"
+        }
 
     SendOptions:
       description: options to apply to a send request
@@ -191,6 +208,24 @@ components:
             "$ref": "#/components/schemas/Tags"
         delivery_hints:
             "$ref": "#/components/schemas/DeliveryHints"
+      x-example-json: >
+        {
+          "TTLParams": {
+            "urgent": 100,
+            "bulk": 200,
+            "surplus": 300
+          },
+          "reliable": true,
+          "tags": {
+            "foo": "bar",
+            "thud": "quux"
+          },
+          "delivery_hints": {
+            "dest_path": "/foo/bar",
+            "mode": "640",
+            "an": "additionalProperty"
+          }
+        }
 
     SendFileRequest:
       x-body-name: send_file_request
@@ -208,6 +243,29 @@ components:
           description: the pipeline topic to send the file to
         options:
           "$ref": "#/components/schemas/SendOptions"
+      x-example-json: >
+        {
+          "destination": "ground",
+          "filepath": "/mnt/sd1/foo/bar",
+          "topic": "the quick brown fox who jumped over the lazy dog",
+          "options": {
+            "TTLParams": {
+              "urgent": 100,
+              "bulk": 200,
+              "surplus": 300
+            },
+            "reliable": true,
+            "tags": {
+              "foo": "bar",
+              "thud": "quux"
+            },
+            "delivery_hints": {
+              "dest_path": "/foo/bar",
+              "mode": "640",
+              "an": "additionalProperty"
+            }
+          }
+        }
 
     SendFileResponse:
       description: Response to a send file request
@@ -217,6 +275,10 @@ components:
         UUID:
           type: string
           format: UUID
+      x-example-json: >
+        {
+          "UUID": "b071ca24-29a5-11f1-9d99-00155d2f52cc"
+        }
 
     FileInfo:
       type: object
@@ -230,10 +292,13 @@ components:
           type: string
         size:
           type: integer
+          format: int64
         modified:
           type: integer
+          format: int64
         created:
           type: integer
+          format: int64
         crc32:
           type: string
         extra:
@@ -242,6 +307,25 @@ components:
               type: string
         delivery_hints:
             "$ref": "#/components/schemas/DeliveryHints"
+      x-example-json: >
+        {
+          "id": "b071ca24-29a5-11f1-9d99-00155d2f52cc",
+          "path": "/mnt/sd1/foo/bar",
+          "size": 100,
+          "modified": 1774592815,
+          "created": 1774592814,
+          "crc32": "1A2B3C4D",
+          "extra": {
+            "just": "a",
+            "couple": "of",
+            "example": "tags"
+          },
+          "delivery_hints": {
+            "dest_path": "/foo/bar",
+            "mode": "640",
+            "an": "additionalProperty"
+          }
+        }
 
     AvailableFilesResponse:
       title: AvailableFilesResponse
@@ -254,6 +338,30 @@ components:
         overflow:
           type: boolean
           description: true if there are more files available than could be returned in this call
+      x-example-json: >
+        {
+          "files": [
+            {
+              "id": "b071ca24-29a5-11f1-9d99-00155d2f52cc",
+              "path": "/mnt/sd1/foo/bar",
+              "size": 100,
+              "modified": 1774592815,
+              "created": 1774592814,
+              "crc32": "1A2B3C4D",
+              "extra": {
+                "just": "a",
+                "couple": "of",
+                "example": "tags"
+              },
+              "delivery_hints": {
+                "dest_path": "/foo/bar",
+                "mode": "640",
+                "an": "additionalProperty"
+              }
+            }
+          ],
+          "overflow": false
+        }
 
     RetrieveFileRequest:
       x-body-name: retrieve_request
@@ -267,6 +375,12 @@ components:
           type: string
           description: The destination path to save the file. Must be an absolute path.
           pattern: "^/.*"
+      x-example-json: >
+        {
+          "id": "b071ca24-29a5-11f1-9d99-00155d2f52cc",
+          "save_path": "/shave/the/whales"
+        }
+
 
     ErrorResponse:
       type: object
@@ -276,3 +390,8 @@ components:
           type: integer
         message:
           type: string
+      x-example-json: >
+        {
+          "status": 500,
+          "message": "yikes"
+        }

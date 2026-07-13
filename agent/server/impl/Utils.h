@@ -48,6 +48,7 @@ void from_jsonfile(F &stream, T &obj) {
 
 template <class T>
 onion_connection_status deliverResponse(Onion::Response &rstream, ResponseCode<T> &response) {
+    rstream.setHeader("Content-Type", "application/json");
     switch (response.code) {
         case Code::Ok :
             rstream << to_jsonstr(response.result);

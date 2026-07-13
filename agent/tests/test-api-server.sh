@@ -12,6 +12,8 @@ SHIM=tests/utils/unit_shim.py
 
 SEND_FILE=/tmp/ubbbu
 
+CURRENT_VERSION=$(cat ../VERSION)
+
 mkdir -p $WORKDIR
 
 echo workdir is $WORKDIR
@@ -86,7 +88,7 @@ while ! nc localhost 2005 < /dev/null ; do
 done
 
 cget blob http://localhost:2005/collector/v1/info -X POST
-jq_assert "$blob" .sysinfo.version 1.5.1 "Version check"
+jq_assert "$blob" .sysinfo.version $CURRENT_VERSION "Version check"
 jq_assert "$blob" .sysinfo.workdir $WORKDIR/transfers "Working directory"
 
 diskfree=$(df -B1 $WORKDIR | awk 'NR~2 {print $4}')
@@ -149,6 +151,14 @@ jq_assert "$blob" .mode SUNSPIN
 cget blob http://localhost:2005/sdk/v1/adcs -H 'Content-type: application/json' -d '{"command": "IDLE", "aperture": "X"}'
 jq_assert "$blob" .status 400
 jq_assert "$blob" .message "Aperture X"
+
+# oversized file - 3GB
+dd if=/dev/zero of=$SEND_FILE bs=1M count=3072
+request="$(jq -n --arg sendfile $SEND_FILE '.filepath=$sendfile|.destination="ground"|.topic="test"')"
+cget blob http://localhost:2005/sdk/v1/send_file -H "Content-type: application/json" -d "$request"
+id=$(echo "$blob" | jq -r .UUID)
+jq_assert "$(cat $WORKDIR/transfers/$id.meta.oort)" .file_info.size $(( 1024 * 1024 * 3072))
+test $(stat -c %s $WORKDIR/transfers/$id.data.oort) == $(( 1024 * 1024 * 3072))  || (echo "file wrong size" && false)
 
 kill $APP_PID
 wait $APP_PID 2> /dev/null || true

@@ -6,12 +6,14 @@ INSTALLERS=\
 	install-armv7a.zip install-armv8.zip install-x86.zip install-cortexa9.zip \
 	install-armv7a.tar.gz install-armv8.tar.gz install-x86.tar.gz install-cortexa9.tar.gz
 
-$(filter %.zip,${INSTALLERS}): install-%.zip: install-%/oort-agent $(call rwildcard,install,*)
+$(filter %.zip,${INSTALLERS}): install-%.zip: install-%/oort-agent $(call rwildcard,install,*) $(call rwildcard,../support,*)
 	cp -rp install/* install-$*/
+	cp -rp ../support/* install-$*/
 	zip -ru $@ install-$*/
 
-$(filter %.tar.gz,${INSTALLERS}): install-%.tar.gz: install-%/oort-agent $(call rwildcard,install,*)
+$(filter %.tar.gz,${INSTALLERS}): install-%.tar.gz: install-%/oort-agent $(call rwildcard,install,*) $(call rwildcard,../support,*)
 	cp -rp install/* install-$*/
+	cp -rp ../support/* install-$*/
 	tar czf $@ install-$*/
 
 install-%/oort-agent: ../agent/build-cross-%/oort-server

@@ -1,16 +1,22 @@
 #!/bin/sh
 
-PID="/var/run/oort-agent.pid"
-CMD="/usr/local/bin/oort-agent"
-WORKDIR="/media/sd1/oort-agent"
-SYSLOG_IDENT="oort-agent"
+ENV_FILE="/etc/default/oort-agent"
+if [ -e "${ENV_FILE}" ]; then
+    . ${ENV_FILE}
+fi
+
+PID=${PID:-"/var/run/oort-agent.pid"}
+CMD=${CMD:-"/usr/local/bin/oort-agent"}
+WORKDIR=${WORKDIR:-"/media/sd1/oort-agent"}
+SYSLOG_IDENT=${SYSLOG_IDENT:-"oort-agent"}
+MAXAGE_S=${MAXAGE_S:-604800}
 
 case $1 in
   start)
     echo "starting OORT Agent"
     # ensure working directory exists
     test -d $WORKDIR || mkdir -p $WORKDIR
-    start-stop-daemon -S -p $PID -x $CMD -mb -- -w $WORKDIR -s $SYSLOG_IDENT
+    start-stop-daemon -S -p $PID -x $CMD -mb -- -w $WORKDIR -s $SYSLOG_IDENT -t $MAXAGE_S
     ;;
   stop)
     echo "stopping OORT Agent"

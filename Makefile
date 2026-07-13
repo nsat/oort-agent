@@ -1,3 +1,4 @@
+## default - run lint
 default: lint
 
 .PHONY: help
@@ -9,22 +10,6 @@ help:
 
 DIRS=spec agent ci
 TOPTARGETS=lint
-
-## default - run lint
-
-## docs - regenerate slate docs
-docs:
-	docker run --rm \
-	-v ${PWD}/docs:/srv/slate/build \
-	-v ${PWD}/documentation:/srv/slate/source/includes \
-	spire-slate bundle exec middleman build
-
-## docs-serve - regenerate slate docs
-docs-serve:
-	docker run --rm --net=host \
-	-v ${PWD}/docs:/srv/slate/build \
-	-v ${PWD}/documentation:/srv/slate/source/includes \
-	spire-slate bundle exec middleman server --bind-address 0.0.0.0
 
 # 
 # rules to run command in all subdirectories

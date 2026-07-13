@@ -109,7 +109,7 @@ file(GLOB TEST_SRCS
 ExternalProject_Add(Catch2
     PREFIX ../external/catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v2.11.3
+    GIT_TAG v2.13.10
     CMAKE_ARGS
          -DCMAKE_INSTALL_PREFIX=${EXTERNAL_INSTALL_LOCATION} 
          -DBUILD_TESTING=off

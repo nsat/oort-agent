@@ -11,7 +11,16 @@ help:
 # from https://stackoverflow.com/a/18258352/796950
 rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
-OAPI_GENERATOR = openapitools/openapi-generator-cli:v4.2.3
+OAPI_VERSION = v4.2.3
+OAPI_UPSTREAM = openapitools/openapi-generator-cli:$(OAPI_VERSION)
+# v4.2.3 doesn't include an arm64 imge and its OpenJDK 8 JVM deadlocks under
+# enumlation user qemu-user, so we cant just run it using `--platform=linux/amd64` on arm64 hosts.
+# The generator jar is platform independent so we extact this from the image
+# and run that under a mutl-arch supporting JRE.
+# NOTE: When ``OAPI_VERSION`` is upgraded to a newer version which includes an arm64 image, this can be removed.
+OAPI_RUNNER = eclipse-temurin:21-jre
+OAPI_JAR_IN_IMAGE = /opt/openapi-generator/modules/openapi-generator-cli/target/openapi-generator-cli.jar
+OAPI_JAR = $(BUILD)/openapi-generator-cli-$(OAPI_VERSION).jar
 OAPI_TARGET = cpp-pistache-server
 
 SERVER_BASE = server
@@ -19,7 +28,7 @@ SERVER_BASE = server
 SPEC_DIR = ../spec
 
 ifneq "${ARCH}" ""
-# CMAKE_EXTRA=-D CMAKE_TOOLCHAIN_FILE=CMakeToolchain.txt 
+# CMAKE_EXTRA=-D CMAKE_TOOLCHAIN_FILE=CMakeToolchain.txt
 BUILD=build-cross-${ARCH}
 else
 BUILD=build
@@ -142,12 +151,20 @@ $(OVERLAY_FILES): | ${BUILD}/oort-collector-api.bpl ${BUILD}/oort-sdk-api.bpl di
 $(OVERLAY_THIRDPARTY_FILES): | dirs
 $(OVERLAY_USSP_FILES): | dirs
 
-${BUILD}/%.bpl: ${SPEC_DIR}/%.yml | dirs
+$(OAPI_JAR): extract-openapi-jar.sh | dirs
+	./extract-openapi-jar.sh $(OAPI_UPSTREAM) $(OAPI_JAR_IN_IMAGE) $@
+
+ROOT=$(realpath ${CURDIR}/..)
+CUR=$(notdir ${CURDIR})
+
+${BUILD}/%.bpl: ${SPEC_DIR}/%.yml $(OAPI_JAR) | dirs
 	docker run --rm \
-		-v /:/local \
-		-w /local/${CURDIR} \
+		-v ${ROOT}:/local \
+		-w /local/${CUR} \
 		-u`id -u` \
-		$(OAPI_GENERATOR) generate \
+		--entrypoint java \
+		$(OAPI_RUNNER) \
+		-jar $(OAPI_JAR) generate \
 		-i $< \
 		-g $(OAPI_TARGET) \
 		-o ${BUILD}/$(SERVER_BASE)/ \
@@ -161,8 +178,8 @@ ${BUILD}/%.binc: ${SPEC_DIR}/%.yml
 
 ${BUILD}/oort-sdk-api.bpl: ${BUILD}/adcs-schema.binc ${BUILD}/adcs-hk.binc
 
-${BUILD}/oort-sdk-api: ${BUILD}/oort-sdk-api.bpl 
-	touch $@ 
+${BUILD}/oort-sdk-api: ${BUILD}/oort-sdk-api.bpl
+	touch $@
 
 ${BUILD}/oort-collector-api: ${BUILD}/oort-collector-api.bpl
 	touch $@
@@ -259,7 +276,7 @@ gdb-runcan: ${BUILD}/oort-server
 vg-runcan: ${BUILD}/oort-server
 	valgrind --tool=memcheck --show-leak-kinds=all --leak-check=full ${BUILD}/oort-server -w /tmp/workdir.1 -l debug -c can0 -n 12
 
-## server - build oort-server 
+## server - build oort-server
 server: ${BUILD}/oort-server
 
 ## lint - run cpplint against server sources
@@ -268,7 +285,7 @@ lint:
 
 .PHONY: clean-cmake clean-objs clean-overlay clean
 ## clean-cmake - remove cmake generated files
-clean-cmake: 
+clean-cmake:
 	cd ${BUILD} && \
 	find . -name CMakeFiles -o -name CMakeCache.txt |xargs rm -rf
 
@@ -311,3 +328,4 @@ cross:
 
 build-cross-%/oort-server: ${OVERLAY_SRCS}
 	${MAKE} ARCH=$* cross TARGETS=$@
+
